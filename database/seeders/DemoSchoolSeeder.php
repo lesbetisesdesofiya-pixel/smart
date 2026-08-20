@@ -58,14 +58,14 @@ class DemoSchoolSeeder extends Seeder
         $sec2 = Section::firstOrCreate(['school_id' => $school2->id, 'libelle' => 'Lycée']);
 
         // === CLASSES ÉCOLE 1 (3 classes) ===
-        $c1_6A = Classe::firstOrCreate(['school_id' => $school1->id, 'section_id' => $sec1->id, 'libelle' => '6ème A', 'annee_scolaire_id' => $annee1->id]);
-        $c1_5B = Classe::firstOrCreate(['school_id' => $school1->id, 'section_id' => $sec1->id, 'libelle' => '5ème B', 'annee_scolaire_id' => $annee1->id]);
-        $c1_4A = Classe::firstOrCreate(['school_id' => $school1->id, 'section_id' => $sec1->id, 'libelle' => '4ème A', 'annee_scolaire_id' => $annee1->id]);
+        $c1_6A = Classe::firstOrCreate(['school_id' => $school1->id, 'section_id' => $sec1->id, 'annee_scolaire_id' => $annee1->id, 'libelle' => '6ème A']);
+        $c1_5B = Classe::firstOrCreate(['school_id' => $school1->id, 'section_id' => $sec1->id, 'annee_scolaire_id' => $annee1->id, 'libelle' => '5ème B']);
+        $c1_4A = Classe::firstOrCreate(['school_id' => $school1->id, 'section_id' => $sec1->id, 'annee_scolaire_id' => $annee1->id, 'libelle' => '4ème A']);
 
         // === CLASSES ÉCOLE 2 (3 classes) ===
-        $c2_2nde = Classe::firstOrCreate(['school_id' => $school2->id, 'section_id' => $sec2->id, 'libelle' => '2nde A', 'annee_scolaire_id' => $annee2->id]);
-        $c2_1ere = Classe::firstOrCreate(['school_id' => $school2->id, 'section_id' => $sec2->id, 'libelle' => '1ère C', 'annee_scolaire_id' => $annee2->id]);
-        $c2_tale = Classe::firstOrCreate(['school_id' => $school2->id, 'section_id' => $sec2->id, 'libelle' => 'Terminale D', 'annee_scolaire_id' => $annee2->id]);
+        $c2_2nde = Classe::firstOrCreate(['school_id' => $school2->id, 'section_id' => $sec2->id, 'annee_scolaire_id' => $annee2->id, 'libelle' => '2nde A']);
+        $c2_1ere = Classe::firstOrCreate(['school_id' => $school2->id, 'section_id' => $sec2->id, 'annee_scolaire_id' => $annee2->id, 'libelle' => '1ère C']);
+        $c2_tale = Classe::firstOrCreate(['school_id' => $school2->id, 'section_id' => $sec2->id, 'annee_scolaire_id' => $annee2->id, 'libelle' => 'Terminale D']);
 
         // === MATIÈRES ===
         $matMath = Matiere::firstOrCreate(['school_id' => $school1->id, 'libelle' => 'Mathématiques']);
@@ -75,35 +75,42 @@ class DemoSchoolSeeder extends Seeder
         $matPhys = Matiere::firstOrCreate(['school_id' => $school2->id, 'libelle' => 'Physique-Chimie']);
         $matSVT = Matiere::firstOrCreate(['school_id' => $school2->id, 'libelle' => 'SVT']);
 
+        // === PÉRIODES ===
+        $p1_1 = Periode::firstOrCreate(['school_id' => $school1->id, 'annee_scolaire_id' => $annee1->id, 'libelle' => '1er Trimestre'], ['type' => 'trimestre', 'numero' => 1]);
+        $p1_2 = Periode::firstOrCreate(['school_id' => $school1->id, 'annee_scolaire_id' => $annee1->id, 'libelle' => '2ème Trimestre'], ['type' => 'trimestre', 'numero' => 2]);
+        $p1_3 = Periode::firstOrCreate(['school_id' => $school1->id, 'annee_scolaire_id' => $annee1->id, 'libelle' => '3ème Trimestre'], ['type' => 'trimestre', 'numero' => 3]);
+        $p2_1 = Periode::firstOrCreate(['school_id' => $school2->id, 'annee_scolaire_id' => $annee2->id, 'libelle' => '1er Trimestre'], ['type' => 'trimestre', 'numero' => 1]);
+        $p2_2 = Periode::firstOrCreate(['school_id' => $school2->id, 'annee_scolaire_id' => $annee2->id, 'libelle' => '2ème Trimestre'], ['type' => 'trimestre', 'numero' => 2]);
+
         // === PROF KOFI (+22890680185) — dans les 2 écoles, 3 classes chacune ===
         $profKofi = Prof::firstOrCreate(['telephone' => '+22890680185'], [
             'school_id' => $school1->id, 'nom' => 'Agbeko', 'prenom' => 'Kofi', 'email' => 'kofi@ecole.tg', 'active' => true, 'code' => strtoupper(Str::random(6))
         ]);
         $profKofi->schools()->syncWithoutDetaching([$school1->id, $school2->id]);
 
-        // Affectations École 1
-        Affectation::firstOrCreate(['prof_id' => $profKofi->id, 'classe_id' => $c1_6A->id, 'matiere_id' => $matMath->id, 'annee_scolaire_id' => $annee1->id, 'school_id' => $school1->id]);
-        Affectation::firstOrCreate(['prof_id' => $profKofi->id, 'classe_id' => $c1_5B->id, 'matiere_id' => $matMath->id, 'annee_scolaire_id' => $annee1->id, 'school_id' => $school1->id]);
-        Affectation::firstOrCreate(['prof_id' => $profKofi->id, 'classe_id' => $c1_4A->id, 'matiere_id' => $matMath->id, 'annee_scolaire_id' => $annee1->id, 'school_id' => $school1->id]);
+        // Affectations École 1 (pas de school_id dans la table)
+        Affectation::firstOrCreate(['prof_id' => $profKofi->id, 'classe_id' => $c1_6A->id, 'matiere_id' => $matMath->id, 'annee_scolaire_id' => $annee1->id]);
+        Affectation::firstOrCreate(['prof_id' => $profKofi->id, 'classe_id' => $c1_5B->id, 'matiere_id' => $matMath->id, 'annee_scolaire_id' => $annee1->id]);
+        Affectation::firstOrCreate(['prof_id' => $profKofi->id, 'classe_id' => $c1_4A->id, 'matiere_id' => $matMath->id, 'annee_scolaire_id' => $annee1->id]);
 
         // Affectations École 2
-        Affectation::firstOrCreate(['prof_id' => $profKofi->id, 'classe_id' => $c2_2nde->id, 'matiere_id' => $matMath2->id, 'annee_scolaire_id' => $annee2->id, 'school_id' => $school2->id]);
-        Affectation::firstOrCreate(['prof_id' => $profKofi->id, 'classe_id' => $c2_1ere->id, 'matiere_id' => $matMath2->id, 'annee_scolaire_id' => $annee2->id, 'school_id' => $school2->id]);
-        Affectation::firstOrCreate(['prof_id' => $profKofi->id, 'classe_id' => $c2_tale->id, 'matiere_id' => $matMath2->id, 'annee_scolaire_id' => $annee2->id, 'school_id' => $school2->id]);
+        Affectation::firstOrCreate(['prof_id' => $profKofi->id, 'classe_id' => $c2_2nde->id, 'matiere_id' => $matMath2->id, 'annee_scolaire_id' => $annee2->id]);
+        Affectation::firstOrCreate(['prof_id' => $profKofi->id, 'classe_id' => $c2_1ere->id, 'matiere_id' => $matMath2->id, 'annee_scolaire_id' => $annee2->id]);
+        Affectation::firstOrCreate(['prof_id' => $profKofi->id, 'classe_id' => $c2_tale->id, 'matiere_id' => $matMath2->id, 'annee_scolaire_id' => $annee2->id]);
 
         // === PARENT SOFIYA (+22899215580) — 2 enfants dans des écoles différentes ===
         $parentSofiya = ParentModel::firstOrCreate(['telephone' => '+22899215580'], [
             'code' => strtoupper(Str::random(4) . '-' . Str::random(4)), 'active' => true, 'whatsapp_activated' => true
         ]);
 
-        // Enfant 1 : École 1
+        // Enfant 1 : Amina — École 1
         $eleve1 = Eleve::firstOrCreate(['school_id' => $school1->id, 'nom' => 'Dupont', 'prenom' => 'Amina'], [
             'classe_id' => $c1_6A->id, 'date_naissance' => '2014-03-15', 'matricule' => 'ELV-' . strtoupper(Str::random(6)), 'sexe' => 'F', 'active' => true
         ]);
         $eleve1->parents()->syncWithoutDetaching([$parentSofiya->id]);
         EleveClasse::firstOrCreate(['eleve_id' => $eleve1->id, 'annee_scolaire_id' => $annee1->id], ['classe_id' => $c1_6A->id]);
 
-        // Enfant 2 : École 2
+        // Enfant 2 : Kofi — École 2
         $eleve2 = Eleve::firstOrCreate(['school_id' => $school2->id, 'nom' => 'Dupont', 'prenom' => 'Kofi'], [
             'classe_id' => $c2_2nde->id, 'date_naissance' => '2010-07-22', 'matricule' => 'ELV-' . strtoupper(Str::random(6)), 'sexe' => 'M', 'active' => true
         ]);
@@ -115,7 +122,6 @@ class DemoSchoolSeeder extends Seeder
         $sub2 = Subscription::firstOrCreate(['eleve_id' => $eleve2->id, 'annee_scolaire_id' => $annee2->id], ['classe_id' => $c2_2nde->id, 'inscrit' => true, 'montant_mensuel' => 30000]);
 
         // === NOTES pour Amina (École 1) ===
-        $periode1 = $annee1->periodes()->first();
         $matieres1 = [$matMath, $matFr, $matAngl];
         $types = [
             ['type' => 'composition', 'titre' => 'Composition du 1er trimestre'],
@@ -125,30 +131,29 @@ class DemoSchoolSeeder extends Seeder
         foreach ($matieres1 as $i => $mat) {
             $t = $types[$i % 3];
             $eval = Evaluation::firstOrCreate(['school_id' => $school1->id, 'classe_id' => $c1_6A->id, 'matiere_id' => $mat->id, 'titre' => $t['titre'] . ' en ' . $mat->libelle], [
-                'periode_id' => $periode1?->id, 'annee_scolaire_id' => $annee1->id, 'type' => $t['type'], 'date' => now()->subDays(rand(5, 40))->toDateString(), 'coefficient' => rand(1, 3), 'note_sur' => 20
+                'periode_id' => $p1_1->id, 'annee_scolaire_id' => $annee1->id, 'type' => $t['type'], 'date' => now()->subDays(rand(5, 40))->toDateString(), 'coefficient' => rand(1, 3), 'note_sur' => 20
             ]);
             Note::firstOrCreate(['evaluation_id' => $eval->id, 'eleve_id' => $eleve1->id], ['note' => rand(80, 180) / 10, 'appreciation' => ['Très bien', 'Bien', 'Passable'][rand(0, 2)]]);
         }
 
         // Examens à venir Amina
         Evaluation::firstOrCreate(['school_id' => $school1->id, 'classe_id' => $c1_6A->id, 'matiere_id' => $matMath->id, 'titre' => 'Composition du 3ème trimestre en Maths'], [
-            'periode_id' => $periode1?->id, 'annee_scolaire_id' => $annee1->id, 'type' => 'composition', 'date' => now()->addDays(10)->toDateString(), 'coefficient' => 2, 'note_sur' => 20
+            'periode_id' => $p1_3->id, 'annee_scolaire_id' => $annee1->id, 'type' => 'composition', 'date' => now()->addDays(10)->toDateString(), 'coefficient' => 2, 'note_sur' => 20
         ]);
 
         // === NOTES pour Kofi (École 2) ===
-        $periode2 = $annee2->periodes()->first();
         $matieres2 = [$matMath2, $matPhys, $matSVT];
         foreach ($matieres2 as $i => $mat) {
             $t = $types[$i % 3];
             $eval = Evaluation::firstOrCreate(['school_id' => $school2->id, 'classe_id' => $c2_2nde->id, 'matiere_id' => $mat->id, 'titre' => $t['titre'] . ' en ' . $mat->libelle], [
-                'periode_id' => $periode2?->id, 'annee_scolaire_id' => $annee2->id, 'type' => $t['type'], 'date' => now()->subDays(rand(5, 40))->toDateString(), 'coefficient' => rand(1, 3), 'note_sur' => 20
+                'periode_id' => $p2_1->id, 'annee_scolaire_id' => $annee2->id, 'type' => $t['type'], 'date' => now()->subDays(rand(5, 40))->toDateString(), 'coefficient' => rand(1, 3), 'note_sur' => 20
             ]);
             Note::firstOrCreate(['evaluation_id' => $eval->id, 'eleve_id' => $eleve2->id], ['note' => rand(80, 180) / 10, 'appreciation' => ['Très bien', 'Bien', 'Passable'][rand(0, 2)]]);
         }
 
         // Examens à venir Kofi
         Evaluation::firstOrCreate(['school_id' => $school2->id, 'classe_id' => $c2_2nde->id, 'matiere_id' => $matMath2->id, 'titre' => 'Interrogation en Maths'], [
-            'periode_id' => $periode2?->id, 'annee_scolaire_id' => $annee2->id, 'type' => 'interrogation', 'date' => now()->addDays(5)->toDateString(), 'coefficient' => 1, 'note_sur' => 20
+            'periode_id' => $p2_2->id, 'annee_scolaire_id' => $annee2->id, 'type' => 'interrogation', 'date' => now()->addDays(5)->toDateString(), 'coefficient' => 1, 'note_sur' => 20
         ]);
 
         // === ABSENCES ===
@@ -166,7 +171,7 @@ class DemoSchoolSeeder extends Seeder
         Remarque::create(['eleve_id' => $eleve2->id, 'prof_id' => $profKofi->id, 'school_id' => $school2->id, 'classe_id' => $c2_2nde->id, 'type' => 'academique', 'contenu' => 'Kofi doit fournir plus d\'efforts en maths.', 'visible_parent' => true]);
 
         // === FRAIS + PAIEMENTS ===
-        foreach ([[$eleve1, $sub1, $c1_6A, $school1, $annee1], [$eleve2, $sub2, $c2_2nde, $school2, $annee2]] as [$eleve, $sub, $classe, $school, $annee]) {
+        foreach ([[$eleve1, $sub1, $c1_6A, $school1], [$eleve2, $sub2, $c2_2nde, $school2]] as [$eleve, $sub, $classe, $school]) {
             $fraisItems = [
                 ['libelle' => 'Scolarité', 'type' => 'scolarite', 'montant' => 75000],
                 ['libelle' => 'Frais d\'inscription', 'type' => 'inscription', 'montant' => 15000],
@@ -179,22 +184,24 @@ class DemoSchoolSeeder extends Seeder
                 $f->classes()->syncWithoutDetaching([$classe->id]);
                 $createdFrais[] = $f;
             }
-            foreach ([['frais_index' => 0, 'montant' => 50000], ['frais_index' => 0, 'montant' => 25000], ['frais_index' => 1, 'montant' => 15000]] as $p) {
+            // Paiements (type enum: scolarite, frais, abonnement)
+            $paiements = [
+                ['frais_index' => 0, 'montant' => 50000, 'type' => 'scolarite'],
+                ['frais_index' => 0, 'montant' => 25000, 'type' => 'scolarite'],
+                ['frais_index' => 1, 'montant' => 15000, 'type' => 'frais'],
+                ['frais_index' => 3, 'montant' => 12000, 'type' => 'frais'],
+            ];
+            foreach ($paiements as $p) {
                 $f = $createdFrais[$p['frais_index']] ?? null;
-                if ($f) SubscriptionPayment::firstOrCreate(['subscription_id' => $sub->id, 'frais_id' => $f->id, 'montant' => $p['montant']], ['type' => 'frais', 'methode_paiement' => 'especes']);
+                if ($f) {
+                    SubscriptionPayment::firstOrCreate(['subscription_id' => $sub->id, 'frais_id' => $f->id, 'montant' => $p['montant']], ['type' => $p['type'], 'methode_paiement' => 'especes']);
+                }
             }
         }
 
         // === ANNONCES ===
         Annonce::firstOrCreate(['school_id' => $school1->id, 'titre' => 'Réunion parents-professeurs'], ['user_id' => $admin1->id, 'contenu' => 'Réunion le 25 août à 15h.', 'type' => 'info', 'publie' => true]);
-        Annonce::firstOrCreate(['school_id' => $school2->id, 'titre' => 'Sortie scolaire'], ['user_id' => $admin2->id, 'contenu' => 'Sortie au musée le 30 janvier.', 'type' => 'evenement', 'publie' => true]);
-
-        // === PÉRIODES ===
-        foreach ([[$school1, $annee1], [$school2, $annee2]] as [$s, $a]) {
-            Periode::firstOrCreate(['school_id' => $s->id, 'annee_scolaire_id' => $a->id, 'libelle' => '1er Trimestre'], ['date_debut' => '2025-09-01', 'date_fin' => '2025-12-31']);
-            Periode::firstOrCreate(['school_id' => $s->id, 'annee_scolaire_id' => $a->id, 'libelle' => '2ème Trimestre'], ['date_debut' => '2026-01-01', 'date_fin' => '2026-03-31']);
-            Periode::firstOrCreate(['school_id' => $s->id, 'annee_scolaire_id' => $a->id, 'libelle' => '3ème Trimestre'], ['date_debut' => '2026-04-01', 'date_fin' => '2026-06-30']);
-        }
+        Annonce::firstOrCreate(['school_id' => $school2->id, 'titre' => 'Sortie scolaire'], ['user_id' => $admin2->id, 'contenu' => 'Sortie au musée le 30 janvier.', 'type' => 'info', 'publie' => true]);
 
         $this->command->info('✅ Données créées !');
         $this->command->info('');
