@@ -77,7 +77,7 @@ class DemoSchoolSeeder extends Seeder
 
         // === PROF KOFI (+22890680185) — dans les 2 écoles, 3 classes chacune ===
         $profKofi = Prof::firstOrCreate(['telephone' => '+22890680185'], [
-            'school_id' => $school1->id, 'nom' => 'Agbeko', 'prenom' => 'Kofi', 'email' => 'kofi@ecole.tg', 'active' => true
+            'school_id' => $school1->id, 'nom' => 'Agbeko', 'prenom' => 'Kofi', 'email' => 'kofi@ecole.tg', 'active' => true, 'code' => strtoupper(Str::random(6))
         ]);
         $profKofi->schools()->syncWithoutDetaching([$school1->id, $school2->id]);
 
