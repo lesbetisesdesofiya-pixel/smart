@@ -2442,26 +2442,38 @@ Que souhaitez-vous faire ?";
  ]);
  }
 
- private function handleProfFlow(WhatsAppConversation $conv, \App\Models\Prof $prof, string $norm, ?string $state): void
- {
- // Role selection
- if ($state === 'awaiting_role_selection') {
- if ($norm === 'role_prof' || preg_match('/prof|enseignant/i', $norm)) {
- $this->sendProfMenu($conv, $prof);
- return;
- }
- if ($norm === 'role_parent' || $norm === 'role parent' || preg_match('/mode.*parent|parent.*mode/i', $norm)) {
- $conv->setState('awaiting_menu_action', ['role' => 'parent']);
- $parent = $this->findParentByPhone([$conv->participant_phone]);
- if ($parent) $this->startRichMenu($conv, $parent);
- return;
- }
- $this->askRoleSelection($conv, $this->findParentByPhone([$conv->participant_phone]) ?? new ParentModel(), $prof);
- return;
- }
+    private function handleProfFlow(WhatsAppConversation $conv, \App\Models\Prof $prof, string $norm, ?string $state): void
+    {
+        // Role selection
+        if ($state === 'awaiting_role_selection') {
+            if ($norm === 'role_prof' || preg_match('/prof|enseignant/i', $norm)) {
+                $this->sendProfMenu($conv, $prof);
+                return;
+            }
+            if ($norm === 'role_parent' || $norm === 'role parent' || preg_match('/mode.*parent|parent.*mode/i', $norm)) {
+                $conv->setState('awaiting_menu_action', ['role' => 'parent']);
+                $parent = $this->findParentByPhone([$conv->participant_phone]);
+                if ($parent) $this->startRichMenu($conv, $parent);
+                return;
+            }
+            $this->askRoleSelection($conv, $this->findParentByPhone([$conv->participant_phone]) ?? new ParentModel(), $prof);
+            return;
+        }
 
- // Class selection from menu
- if (preg_match('/classe[:\s]+(\d+)/i', $norm, $m)) {
+        // School selection from list
+        if (preg_match('/school[:\s]+(\d+)/i', $norm, $m)) {
+            $schoolId = (int) $m[1];
+            $school = \App\Models\School::find($schoolId);
+            if ($school) {
+                $parent = $this->findParentByPhone([$conv->participant_phone]);
+                $isParent = !!$parent;
+                $this->sendProfMenuForSchool($conv, $prof, $school, $isParent);
+                return;
+            }
+        }
+
+        // Class selection from menu
+        if (preg_match('/classe[:\s]+(\d+)/i', $norm, $m)) {
  $classeId = (int) $m[1];
  $affectation = $prof->affectations()->where('classe_id', $classeId)->with(['matiere', 'classe'])->first();
  if ($affectation) {
