@@ -1,0 +1,178 @@
+version: '3.8'
+
+services:
+  # PHP + Laravel
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: classinote-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+      - ./docker/php.ini:/usr/local/etc/php/conf.d/custom.ini
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - classinote
+
+  # Nginx
+  nginx:
+    image: nginx:alpine
+    container_name: classinote-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - .:/var/www
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./docker/ssl:/etc/nginx/ssl
+    depends_on:
+      - app
+    networks:
+      - classinote
+
+  # MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: classinote-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${DB_DATABASE:-classinote}
+      MYSQL_USER: ${DB_USERNAME:-classinote}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-classinote}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql:/etc/mysql/conf.d
+    networks:
+      - classinote
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: classinote-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - classinote
+
+  # Queue Workers (x5)
+  queue1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: classinote-queue1
+    restart: unless-stopped
+    working_dir: /var/www
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    volumes:
+      - .:/var/www
+    depends_on:
+      - mysql
+      - redis
+      - app
+    networks:
+      - classinote
+
+  queue2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: classinote-queue2
+    restart: unless-stopped
+    working_dir: /var/www
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    volumes:
+      - .:/var/www
+    depends_on:
+      - mysql
+      - redis
+      - app
+    networks:
+      - classinote
+
+  queue3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: classinote-queue3
+    restart: unless-stopped
+    working_dir: /var/www
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    volumes:
+      - .:/var/www
+    depends_on:
+      - mysql
+      - redis
+      - app
+    networks:
+      - classinote
+
+  queue4:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: classinote-queue4
+    restart: unless-stopped
+    working_dir: /var/www
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    volumes:
+      - .:/var/www
+    depends_on:
+      - mysql
+      - redis
+      - app
+    networks:
+      - classinote
+
+  queue5:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: classinote-queue5
+    restart: unless-stopped
+    working_dir: /var/www
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    volumes:
+      - .:/var/www
+    depends_on:
+      - mysql
+      - redis
+      - app
+    networks:
+      - classinote
+
+  # Scheduler
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: classinote-scheduler
+    restart: unless-stopped
+    working_dir: /var/www
+    command: sh -c "while true; do php artisan schedule:run --verbose --no-interaction & sleep 60; done"
+    volumes:
+      - .:/var/www
+    depends_on:
+      - mysql
+      - redis
+      - app
+    networks:
+      - classinote
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  classinote:
+    driver: bridge

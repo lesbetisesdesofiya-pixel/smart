@@ -1,0 +1,6 @@
+{
+  "name": "ClassiNote",
+  "description": "Espace enseignant pour la gestion des notes, évaluations, classes et communications scolaires.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

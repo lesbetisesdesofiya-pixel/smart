@@ -1,0 +1,63 @@
+{
+  "annee_scolaire": "2026-2027",
+  "sections": [
+    {"libelle": "Secondaire"},
+    {"libelle": "Primaire"}
+  ],
+  "classes": [
+    {"libelle": "6ème A", "section": "Secondaire"},
+    {"libelle": "6ème B", "section": "Secondaire"},
+    {"libelle": "5ème A", "section": "Secondaire"},
+    {"libelle": "CP", "section": "Primaire"}
+  ],
+  "matieres": [
+    {"libelle": "Mathématiques"},
+    {"libelle": "Français"},
+    {"libelle": "Physique"},
+    {"libelle": "Histoire-Géo"},
+    {"libelle": "Anglais"}
+  ],
+  "profs": [
+    {"nom": "Diallo", "prenom": "Moussa", "email": "diallo.moussa@school.com", "telephone": "+22370000001"},
+    {"nom": "Traoré", "prenom": "Fatoumata", "email": "traore.fatou@school.com", "telephone": "+22370000002"},
+    {"nom": "Koné", "prenom": "Ibrahim", "email": null, "telephone": "+22370000003"}
+  ],
+  "eleves": [
+    {"nom": "Koné", "prenom": "Amadou", "classe": "6ème A", "date_naissance": "2012-05-15", "matricule": null, "parent_nom": "Koné Papa", "parent_telephone": "+22390000001"},
+    {"nom": "Diallo", "prenom": "Awa", "classe": "6ème A", "date_naissance": "2012-08-20", "matricule": "MAT-20260001", "parent_nom": "Diallo Mama", "parent_telephone": "+22390000002"},
+    {"nom": "Sissoko", "prenom": "Moussa", "classe": "6ème B", "date_naissance": "2012-03-10", "matricule": null, "parent_nom": null, "parent_telephone": "+22390000003"},
+    {"nom": "Touré", "prenom": "Aminata", "classe": "5ème A", "date_naissance": "2011-11-25", "matricule": null, "parent_nom": "Touré Baba", "parent_telephone": "+22390000004"},
+    {"nom": "Diakité", "prenom": "Sekou", "classe": "CP", "date_naissance": "2018-01-05", "matricule": null, "parent_nom": null, "parent_telephone": "+22390000005"}
+  ],
+  "affectations": [
+    {"prof": "Diallo Moussa", "matiere": "Mathématiques", "classe": "6ème A", "coefficient": 2},
+    {"prof": "Diallo Moussa", "matiere": "Mathématiques", "classe": "6ème B", "coefficient": 2},
+    {"prof": "Traoré Fatoumata", "matiere": "Français", "classe": "6ème A", "coefficient": 2},
+    {"prof": "Traoré Fatoumata", "matiere": "Français", "classe": "5ème A", "coefficient": 2},
+    {"prof": "Koné Ibrahim", "matiere": "Physique", "classe": "6ème A", "coefficient": 1},
+    {"prof": "Koné Ibrahim", "matiere": "Histoire-Géo", "classe": "CP", "coefficient": 1}
+  ],
+  "periodes": [
+    {"libelle": "1er Trimestre", "type": "trimestre", "numero": 1},
+    {"libelle": "2ème Trimestre", "type": "trimestre", "numero": 2},
+    {"libelle": "3ème Trimestre", "type": "trimestre", "numero": 3}
+  ],
+  "emploi_du_temps": [
+    {"classe": "6ème A", "matiere": "Mathématiques", "prof": "Diallo Moussa", "jour": "lundi", "heure_debut": "08:00", "heure_fin": "10:00", "type_cours": "cours"},
+    {"classe": "6ème A", "matiere": "Français", "prof": "Traoré Fatoumata", "jour": "lundi", "heure_debut": "10:00", "heure_fin": "12:00", "type_cours": "cours"},
+    {"classe": "6ème A", "matiere": "Physique", "prof": "Koné Ibrahim", "jour": "mardi", "heure_debut": "08:00", "heure_fin": "10:00", "type_cours": "cours"}
+  ],
+  "evaluations": [
+    {"classe": "6ème A", "matiere": "Mathématiques", "periode": "1er Trimestre", "titre": "Devoir 1 Maths 6A", "type": "devoir", "date": "2026-10-15", "coefficient": 2, "note_sur": 20},
+    {"classe": "6ème A", "matiere": "Français", "periode": "1er Trimestre", "titre": "Devoir 1 Français 6A", "type": "devoir", "date": "2026-10-17", "coefficient": 2, "note_sur": 20}
+  ],
+  "notes": [
+    {"eleve_nom": "Koné", "eleve_prenom": "Amadou", "classe": "6ème A", "evaluation_titre": "Devoir 1 Maths 6A", "note": 15, "appreciation": "Très bien"},
+    {"eleve_nom": "Diallo", "eleve_prenom": "Awa", "classe": "6ème A", "evaluation_titre": "Devoir 1 Maths 6A", "note": 18, "appreciation": "Excellent"},
+    {"eleve_nom": "Koné", "eleve_prenom": "Amadou", "classe": "6ème A", "evaluation_titre": "Devoir 1 Français 6A", "note": 12, "appreciation": "Bien"}
+  ],
+  "frais": [
+    {"libelle": "Frais d'inscription", "description": "Frais d'inscription annuelle", "montant": 50000, "classes": ["6ème A", "6ème B", "5ème A"]},
+    {"libelle": "Minerval", "description": "Minerval mensuel", "montant": 15000, "classes": ["6ème A", "6ème B", "5ème A", "CP"]}
+  ]
+}

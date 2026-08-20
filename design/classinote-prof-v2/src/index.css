@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy-50: #eef2ff;
+  --color-navy-100: #dbe3f4;
+  --color-navy-200: #b3c5ff;
+  --color-navy-300: #758dd5;
+  --color-navy-400: #4a6bb5;
+  --color-navy-500: #375ca6;
+  --color-navy-600: #2a4386;
+  --color-navy-700: #1a2f6b;
+  --color-navy-800: #002366;
+  --color-navy-900: #00113a;
+}
+
+@layer base {
+  :root {
+    --gradient-navy: linear-gradient(135deg, #002366, #375ca6);
+    --gradient-mesh: radial-gradient(ellipse at 20% 50%, rgba(55,92,166,0.06) 0%, transparent 50%),
+                     radial-gradient(ellipse at 80% 20%, rgba(59,130,246,0.04) 0%, transparent 50%),
+                     radial-gradient(ellipse at 50% 80%, rgba(16,185,129,0.03) 0%, transparent 50%);
+  }
+}
+
+@layer utilities {
+  .glass {
+    background: #ffffff;
+    border: 1px solid #dbe3f4;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .glass-strong {
+    background: #ffffff;
+    border: 1px solid #dbe3f4;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+  .gradient-text {
+    background: var(--gradient-navy);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .mesh-bg {
+    background-image: var(--gradient-mesh);
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-fadeIn { animation: fadeIn 0.3s ease-out; }
+.animate-slideUp { animation: slideUp 0.4s ease-out; }
+.animate-scaleIn { animation: scaleIn 0.2s ease-out; }
+.animate-float { animation: float 6s ease-in-out infinite; }

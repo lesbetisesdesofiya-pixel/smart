@@ -1,0 +1,6 @@
+{
+  "name": "ClassiNote",
+  "description": "Application mobile de suivi scolaire pour parents - ClassiNote",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

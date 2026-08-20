@@ -1,0 +1,16 @@
+.env
+.env.*
+.git
+.gitignore
+.idea
+.vscode
+*.md
+*.log
+node_modules
+vendor
+storage/app
+storage/framework
+storage/logs
+storage/firebase-service-account.json
+docker-compose.yml
+docker-compose.override.yml

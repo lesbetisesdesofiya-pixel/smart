@@ -1,0 +1,30 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+class CheckRole
+{
+    public function handle(Request $request, Closure $next, ...$roles): Response
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json(['message' => 'Non authentifié'], 401);
+        }
+
+        // Superadmin can access all roles
+        if ($user->role === 'superadmin') {
+            return $next($request);
+        }
+
+        if (!in_array($user->role, $roles)) {
+            return response()->json(['message' => 'Accès non autorisé'], 403);
+        }
+
+        return $next($request);
+    }
+}

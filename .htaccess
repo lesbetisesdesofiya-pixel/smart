@@ -1,0 +1,14 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Don't rewrite requests that already point to public/
+    RewriteCond %{REQUEST_URI} ^/smart/public/
+    RewriteRule ^ - [L]
+
+    # Don't rewrite API or sanctum routes
+    RewriteCond %{REQUEST_URI} ^/smart/(api|sanctum)/
+    RewriteRule ^ - [L]
+
+    # Rewrite everything else to public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
