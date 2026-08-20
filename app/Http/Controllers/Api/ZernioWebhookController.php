@@ -102,12 +102,17 @@ class ZernioWebhookController extends Controller
  if (!$exists) {
  $text = $message['text'] ?? null;
  $interactiveId = $this->extractInteractiveId($message, $payload);
- $displayText = $this->extractDisplayText($message);
- $attachmentUrl = null;
+                $displayText = $this->extractDisplayText($message);
+                $attachmentUrls = [];
 
- if (!empty($message['attachments'])) {
- $attachmentUrl = $message['attachments'][0]['url'] ?? null;
- }
+                if (!empty($message['attachments'])) {
+                    foreach ($message['attachments'] as $att) {
+                        if (!empty($att['url'])) {
+                            $attachmentUrls[] = $att['url'];
+                        }
+                    }
+                }
+                $attachmentUrl = $attachmentUrls[0] ?? null;
 
  WhatsAppMessage::create([
  'conversation_id' => $conv->id,
@@ -126,42 +131,46 @@ class ZernioWebhookController extends Controller
 
  $input = $interactiveId ?? $text;
 
- // Detect image attachment for prof grade submission
-            if ($attachmentUrl && !$interactiveId) {
-                $convState = $conv->fresh()->state;
-                $stateData = $conv->fresh()->state_data ?? [];
-                if ($convState === 'awaiting_prof_image' && ($stateData['type'] ?? '') === 'notes') {
-                    $profId = $stateData['prof_id'] ?? null;
-                    $classeId = $stateData['classe_id'] ?? null;
-                    $matiereId = $stateData['matiere_id'] ?? null;
-                    $prof = $profId ? \App\Models\Prof::find($profId) : null;
-                    if ($prof) {
-                        $zernioAccountId = $payload['account']['id'] ?? null;
-                        $imageUrl = $attachmentUrl;
-                        if ($zernioAccountId && $zernioMessageId) {
-                            $imageUrl = config('zernio.base_url') . '/whatsapp/media/' . $zernioMessageId . '?accountId=' . $zernioAccountId;
+                // Detect image attachment for prof grade submission
+                if (!empty($attachmentUrls) && !$interactiveId) {
+                    $convState = $conv->fresh()->state;
+                    $stateData = $conv->fresh()->state_data ?? [];
+                    if ($convState === 'awaiting_prof_image' && ($stateData['type'] ?? '') === 'notes') {
+                        $profId = $stateData['prof_id'] ?? null;
+                        $classeId = $stateData['classe_id'] ?? null;
+                        $matiereId = $stateData['matiere_id'] ?? null;
+                        $prof = $profId ? \App\Models\Prof::find($profId) : null;
+                        if ($prof) {
+                            $zernioAccountId = $payload['account']['id'] ?? null;
+                            $count = 0;
+                            foreach ($attachmentUrls as $attUrl) {
+                                $imageUrl = $attUrl;
+                                if ($zernioAccountId && $zernioMessageId) {
+                                    $imageUrl = config('zernio.base_url') . '/whatsapp/media/' . $zernioMessageId . '?accountId=' . $zernioAccountId;
+                                }
+                                \App\Models\GradeSubmission::create([
+                                    'prof_id' => $prof->id,
+                                    'school_id' => $prof->school_id,
+                                    'classe_id' => $classeId ?? $prof->affectations()->first()?->classe_id,
+                                    'matiere_id' => $matiereId ?? $prof->affectations()->first()?->matiere_id,
+                                    'zernio_message_id' => $zernioMessageId,
+                                    'image_url' => $imageUrl,
+                                    'status' => 'pending',
+                                ]);
+                                $count++;
+                            }
+                            $classe = $classeId ? \App\Models\Classe::find($classeId) : null;
+                            $matiere = $matiereId ? \App\Models\Matiere::find($matiereId) : null;
+                            $classeName = $classe?->libelle ?? 'votre classe';
+                            $matiereName = $matiere?->libelle ?? '';
+                            $this->sendText($conv, "✅ *{$count} image(s) bien reçue(s) !*\n\n📚 Classe : {$classeName}\n📚 Matière : {$matiereName}\n\n📸 Envoyez d'autres photos ou cliquez Terminé.", [
+                                ['title' => '✅ Terminé', 'payload' => 'prof_done'],
+                                ['title' => '📸 Autre photo', 'payload' => 'prof_notes'],
+                            ]);
+                            return response()->json(['success' => true]);
                         }
-                        \App\Models\GradeSubmission::create([
-                            'prof_id' => $prof->id,
-                            'school_id' => $prof->school_id,
-                            'classe_id' => $classeId ?? $prof->affectations()->first()?->classe_id,
-                            'matiere_id' => $matiereId ?? $prof->affectations()->first()?->matiere_id,
-                            'zernio_message_id' => $zernioMessageId,
-                            'image_url' => $imageUrl,
-                            'status' => 'pending',
-                        ]);
-                        $classe = $classeId ? \App\Models\Classe::find($classeId) : null;
-                        $matiere = $matiereId ? \App\Models\Matiere::find($matiereId) : null;
-                        $classeName = $classe?->libelle ?? 'votre classe';
-                        $matiereName = $matiere?->libelle ?? '';
-                        $this->sendText($conv, "✅ *Image bien reçue !*\n\n📚 Classe : {$classeName}\n📚 Matière : {$matiereName}\n\n📸 Envoyez d'autres photos ou attendez le traitement.", [
-                            ['title' => '✅ Terminé', 'payload' => 'prof_done'],
-                            ['title' => '📸 Autre photo', 'payload' => 'prof_notes'],
-                        ]);
-                        return response()->json(['success' => true]);
                     }
                 }
-            }
 
  $this->autoReply($conv, [$phoneNumber, $conv->participant_phone, $conversation['participantId'] ?? null, $sender['id'] ?? null], $input);
  }
