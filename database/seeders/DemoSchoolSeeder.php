@@ -43,10 +43,10 @@ class DemoSchoolSeeder extends Seeder
         );
 
         // === ADMIN ===
-        $admin1 = User::firstOrCreate(['email' => 'admin@csm.tg'], ['name' => 'Admin CSM', 'password' => Hash::make('admin123'), 'role' => 'admin', 'school_id' => $school1->id]);
+        $admin1 = User::firstOrCreate(['email' => 'admin@csm.tg'], ['name' => 'Admin CSM', 'password' => Hash::make('admin123'), 'role' => 'admin']);
         $school1->admins()->syncWithoutDetaching([$admin1->id]);
 
-        $admin2 = User::firstOrCreate(['email' => 'admin@lymod.tg'], ['name' => 'Admin Lycée', 'password' => Hash::make('admin123'), 'role' => 'admin', 'school_id' => $school2->id]);
+        $admin2 = User::firstOrCreate(['email' => 'admin@lymod.tg'], ['name' => 'Admin Lycée', 'password' => Hash::make('admin123'), 'role' => 'admin']);
         $school2->admins()->syncWithoutDetaching([$admin2->id]);
 
         // === ANNÉES SCOLAIRES ===
