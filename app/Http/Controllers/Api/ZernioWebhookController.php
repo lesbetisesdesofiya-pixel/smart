@@ -1883,7 +1883,7 @@ class ZernioWebhookController extends Controller
  'user_id' => $admin->id,
  'titre' => 'Fête de fin d\'année',
  'contenu' => 'La cérémonie de remise des bulletins aura lieu le 30 juin à 9h. Tous les parents sont invités.',
- 'type' => 'evenement',
+                'type' => 'info',
  'publie' => true,
  ]);
  }
