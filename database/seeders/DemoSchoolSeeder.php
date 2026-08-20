@@ -50,8 +50,8 @@ class DemoSchoolSeeder extends Seeder
         $school2->admins()->syncWithoutDetaching([$admin2->id]);
 
         // === ANNÉES SCOLAIRES ===
-        $annee1 = AnneeScolaire::firstOrCreate(['school_id' => $school1->id, 'libelle' => '2025-2026'], ['active' => true, 'date_debut' => '2025-09-01', 'date_fin' => '2026-06-30']);
-        $annee2 = AnneeScolaire::firstOrCreate(['school_id' => $school2->id, 'libelle' => '2025-2026'], ['active' => true, 'date_debut' => '2025-09-01', 'date_fin' => '2026-06-30']);
+        $annee1 = AnneeScolaire::firstOrCreate(['school_id' => $school1->id, 'libelle' => '2025-2026'], ['active' => true]);
+        $annee2 = AnneeScolaire::firstOrCreate(['school_id' => $school2->id, 'libelle' => '2025-2026'], ['active' => true]);
 
         // === SECTIONS ===
         $sec1 = Section::firstOrCreate(['school_id' => $school1->id, 'nom' => 'Collège']);
