@@ -20,7 +20,9 @@ use App\Models\Remarque;
 use App\Models\Frais;
 use App\Models\Subscription;
 use App\Models\SubscriptionPayment;
-use App\Models\EmploiDuTemps;
+use App\Models\Periode;
+use App\Models\Affectation;
+use App\Models\EleveClasse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
@@ -28,274 +30,181 @@ class DemoSchoolSeeder extends Seeder
 {
     public function run(): void
     {
-        // === ÉCOLE ===
-        $school = School::firstOrCreate(
-            ['code' => 'ECOLED'],
-            [
-                'nom' => 'École Démonstration',
-                'adresse' => '123 Rue de la Paix, Lomé',
-                'telephone' => '+228900000000',
-                'email' => 'contact@ecole-demo.tg',
-                'active' => true,
-            ]
+        // === ÉCOLE 1 : Collège Sainte Marie ===
+        $school1 = School::firstOrCreate(
+            ['code' => 'CSM'],
+            ['nom' => 'Collège Sainte Marie', 'adresse' => '123 Rue de Lomé', 'telephone' => '+228900000001', 'email' => 'contact@csm.tg', 'active' => true]
+        );
+
+        // === ÉCOLE 2 : Lycée Moderne ===
+        $school2 = School::firstOrCreate(
+            ['code' => 'LYMOD'],
+            ['nom' => 'Lycée Moderne', 'adresse' => '456 Avenue du Togo', 'telephone' => '+228900000002', 'email' => 'contact@lymod.tg', 'active' => true]
         );
 
         // === ADMIN ===
-        $admin = User::firstOrCreate(
-            ['email' => 'admin@ecole-demo.tg'],
-            [
-                'name' => 'Admin École',
-                'password' => Hash::make('admin123'),
-                'role' => 'admin',
-                'school_id' => $school->id,
-            ]
-        );
-        $school->admins()->syncWithoutDetaching([$admin->id]);
+        $admin1 = User::firstOrCreate(['email' => 'admin@csm.tg'], ['name' => 'Admin CSM', 'password' => Hash::make('admin123'), 'role' => 'admin', 'school_id' => $school1->id]);
+        $school1->admins()->syncWithoutDetaching([$admin1->id]);
 
-        // === ANNÉE SCOLAIRE ===
-        $annee = AnneeScolaire::firstOrCreate(
-            ['school_id' => $school->id, 'libelle' => '2025-2026'],
-            ['active' => true, 'date_debut' => '2025-09-01', 'date_fin' => '2026-06-30']
-        );
+        $admin2 = User::firstOrCreate(['email' => 'admin@lymod.tg'], ['name' => 'Admin Lycée', 'password' => Hash::make('admin123'), 'role' => 'admin', 'school_id' => $school2->id]);
+        $school2->admins()->syncWithoutDetaching([$admin2->id]);
+
+        // === ANNÉES SCOLAIRES ===
+        $annee1 = AnneeScolaire::firstOrCreate(['school_id' => $school1->id, 'libelle' => '2025-2026'], ['active' => true, 'date_debut' => '2025-09-01', 'date_fin' => '2026-06-30']);
+        $annee2 = AnneeScolaire::firstOrCreate(['school_id' => $school2->id, 'libelle' => '2025-2026'], ['active' => true, 'date_debut' => '2025-09-01', 'date_fin' => '2026-06-30']);
 
         // === SECTIONS ===
-        $sectionPrimaire = Section::firstOrCreate(
-            ['school_id' => $school->id, 'nom' => 'Primaire']
-        );
-        $sectionCollege = Section::firstOrCreate(
-            ['school_id' => $school->id, 'nom' => 'Collège']
-        );
+        $sec1 = Section::firstOrCreate(['school_id' => $school1->id, 'nom' => 'Collège']);
+        $sec2 = Section::firstOrCreate(['school_id' => $school2->id, 'nom' => 'Lycée']);
 
-        // === CLASSES ===
-        $classe6A = Classe::firstOrCreate(
-            ['school_id' => $school->id, 'section_id' => $sectionCollege->id, 'libelle' => '6ème A', 'annee_scolaire_id' => $annee->id]
-        );
-        $classe5B = Classe::firstOrCreate(
-            ['school_id' => $school->id, 'section_id' => $sectionCollege->id, 'libelle' => '5ème B', 'annee_scolaire_id' => $annee->id]
-        );
-        $classe4A = Classe::firstOrCreate(
-            ['school_id' => $school->id, 'section_id' => $sectionCollege->id, 'libelle' => '4ème A', 'annee_scolaire_id' => $annee->id]
-        );
+        // === CLASSES ÉCOLE 1 (3 classes) ===
+        $c1_6A = Classe::firstOrCreate(['school_id' => $school1->id, 'section_id' => $sec1->id, 'libelle' => '6ème A', 'annee_scolaire_id' => $annee1->id]);
+        $c1_5B = Classe::firstOrCreate(['school_id' => $school1->id, 'section_id' => $sec1->id, 'libelle' => '5ème B', 'annee_scolaire_id' => $annee1->id]);
+        $c1_4A = Classe::firstOrCreate(['school_id' => $school1->id, 'section_id' => $sec1->id, 'libelle' => '4ème A', 'annee_scolaire_id' => $annee1->id]);
+
+        // === CLASSES ÉCOLE 2 (3 classes) ===
+        $c2_2nde = Classe::firstOrCreate(['school_id' => $school2->id, 'section_id' => $sec2->id, 'libelle' => '2nde A', 'annee_scolaire_id' => $annee2->id]);
+        $c2_1ere = Classe::firstOrCreate(['school_id' => $school2->id, 'section_id' => $sec2->id, 'libelle' => '1ère C', 'annee_scolaire_id' => $annee2->id]);
+        $c2_tale = Classe::firstOrCreate(['school_id' => $school2->id, 'section_id' => $sec2->id, 'libelle' => 'Terminale D', 'annee_scolaire_id' => $annee2->id]);
 
         // === MATIÈRES ===
-        $matiereMath = Matiere::firstOrCreate(['school_id' => $school->id, 'libelle' => 'Mathématiques']);
-        $matiereFr = Matiere::firstOrCreate(['school_id' => $school->id, 'libelle' => 'Français']);
-        $matiereAngl = Matiere::firstOrCreate(['school_id' => $school->id, 'libelle' => 'Anglais']);
-        $matiereSVT = Matiere::firstOrCreate(['school_id' => $school->id, 'libelle' => 'SVT']);
-        $matiereHG = Matiere::firstOrCreate(['school_id' => $school->id, 'libelle' => 'Histoire-Géo']);
+        $matMath = Matiere::firstOrCreate(['school_id' => $school1->id, 'libelle' => 'Mathématiques']);
+        $matFr = Matiere::firstOrCreate(['school_id' => $school1->id, 'libelle' => 'Français']);
+        $matAngl = Matiere::firstOrCreate(['school_id' => $school1->id, 'libelle' => 'Anglais']);
+        $matMath2 = Matiere::firstOrCreate(['school_id' => $school2->id, 'libelle' => 'Mathématiques']);
+        $matPhys = Matiere::firstOrCreate(['school_id' => $school2->id, 'libelle' => 'Physique-Chimie']);
+        $matSVT = Matiere::firstOrCreate(['school_id' => $school2->id, 'libelle' => 'SVT']);
 
-        // === PROFS ===
-        $profKofi = Prof::firstOrCreate(
-            ['telephone' => '+22890680185'],
-            ['school_id' => $school->id, 'nom' => 'Agbeko', 'prenom' => 'Kofi', 'email' => 'kofi@ecole-demo.tg', 'active' => true]
-        );
-        $profKofi->schools()->syncWithoutDetaching([$school->id]);
+        // === PROF KOFI (+22890680185) — dans les 2 écoles, 3 classes chacune ===
+        $profKofi = Prof::firstOrCreate(['telephone' => '+22890680185'], [
+            'school_id' => $school1->id, 'nom' => 'Agbeko', 'prenom' => 'Kofi', 'email' => 'kofi@ecole.tg', 'active' => true
+        ]);
+        $profKofi->schools()->syncWithoutDetaching([$school1->id, $school2->id]);
 
-        $profAdjoa = Prof::firstOrCreate(
-            ['telephone' => '+22890123456'],
-            ['school_id' => $school->id, 'nom' => 'Amoussou', 'prenom' => 'Adjoa', 'email' => 'adjoa@ecole-demo.tg', 'active' => true]
-        );
-        $profAdjoa->schools()->syncWithoutDetaching([$school->id]);
+        // Affectations École 1
+        Affectation::firstOrCreate(['prof_id' => $profKofi->id, 'classe_id' => $c1_6A->id, 'matiere_id' => $matMath->id, 'annee_scolaire_id' => $annee1->id, 'school_id' => $school1->id]);
+        Affectation::firstOrCreate(['prof_id' => $profKofi->id, 'classe_id' => $c1_5B->id, 'matiere_id' => $matMath->id, 'annee_scolaire_id' => $annee1->id, 'school_id' => $school1->id]);
+        Affectation::firstOrCreate(['prof_id' => $profKofi->id, 'classe_id' => $c1_4A->id, 'matiere_id' => $matMath->id, 'annee_scolaire_id' => $annee1->id, 'school_id' => $school1->id]);
 
-        $profKossi = Prof::firstOrCreate(
-            ['telephone' => '+22890987654'],
-            ['school_id' => $school->id, 'nom' => 'Dogbo', 'prenom' => 'Kossi', 'email' => 'kossi@ecole-demo.tg', 'active' => true]
-        );
-        $profKossi->schools()->syncWithoutDetaching([$school->id]);
+        // Affectations École 2
+        Affectation::firstOrCreate(['prof_id' => $profKofi->id, 'classe_id' => $c2_2nde->id, 'matiere_id' => $matMath2->id, 'annee_scolaire_id' => $annee2->id, 'school_id' => $school2->id]);
+        Affectation::firstOrCreate(['prof_id' => $profKofi->id, 'classe_id' => $c2_1ere->id, 'matiere_id' => $matMath2->id, 'annee_scolaire_id' => $annee2->id, 'school_id' => $school2->id]);
+        Affectation::firstOrCreate(['prof_id' => $profKofi->id, 'classe_id' => $c2_tale->id, 'matiere_id' => $matMath2->id, 'annee_scolaire_id' => $annee2->id, 'school_id' => $school2->id]);
 
-        // === AFFECTATIONS ===
-        \App\Models\Affectation::firstOrCreate(['prof_id' => $profKofi->id, 'classe_id' => $classe6A->id, 'matiere_id' => $matiereMath->id, 'annee_scolaire_id' => $annee->id, 'school_id' => $school->id]);
-        \App\Models\Affectation::firstOrCreate(['prof_id' => $profKofi->id, 'classe_id' => $classe5B->id, 'matiere_id' => $matiereMath->id, 'annee_scolaire_id' => $annee->id, 'school_id' => $school->id]);
-        \App\Models\Affectation::firstOrCreate(['prof_id' => $profKofi->id, 'classe_id' => $classe4A->id, 'matiere_id' => $matiereMath->id, 'annee_scolaire_id' => $annee->id, 'school_id' => $school->id]);
-        \App\Models\Affectation::firstOrCreate(['prof_id' => $profAdjoa->id, 'classe_id' => $classe6A->id, 'matiere_id' => $matiereFr->id, 'annee_scolaire_id' => $annee->id, 'school_id' => $school->id]);
-        \App\Models\Affectation::firstOrCreate(['prof_id' => $profKossi->id, 'classe_id' => $classe6A->id, 'matiere_id' => $matiereAngl->id, 'annee_scolaire_id' => $annee->id, 'school_id' => $school->id]);
+        // === PARENT SOFIYA (+22899215580) — 2 enfants dans des écoles différentes ===
+        $parentSofiya = ParentModel::firstOrCreate(['telephone' => '+22899215580'], [
+            'code' => strtoupper(Str::random(4) . '-' . Str::random(4)), 'active' => true, 'whatsapp_activated' => true
+        ]);
 
-        // === PARENTS + ÉLÈVES ===
-        $enfants = [
-            ['parent_phone' => '+228911111111', 'parent_nom' => 'Dupont', 'nom' => 'Dupont', 'prenom' => 'Amina', 'sexe' => 'F', 'age' => 12, 'classe' => $classe6A],
-            ['parent_phone' => '+228911111111', 'parent_nom' => 'Dupont', 'nom' => 'Dupont', 'prenom' => 'Kofi', 'sexe' => 'M', 'age' => 10, 'classe' => $classe5B],
-            ['parent_phone' => '+228922222222', 'parent_nom' => 'Mensah', 'nom' => 'Mensah', 'prenom' => 'Fatou', 'sexe' => 'F', 'age' => 11, 'classe' => $classe6A],
-            ['parent_phone' => '+228933333333', 'parent_nom' => 'Koffi', 'nom' => 'Koffi', 'prenom' => 'Yao', 'sexe' => 'M', 'age' => 13, 'classe' => $classe4A],
+        // Enfant 1 : École 1
+        $eleve1 = Eleve::firstOrCreate(['school_id' => $school1->id, 'nom' => 'Dupont', 'prenom' => 'Amina'], [
+            'classe_id' => $c1_6A->id, 'date_naissance' => '2014-03-15', 'matricule' => 'ELV-' . strtoupper(Str::random(6)), 'sexe' => 'F', 'active' => true
+        ]);
+        $eleve1->parents()->syncWithoutDetaching([$parentSofiya->id]);
+        EleveClasse::firstOrCreate(['eleve_id' => $eleve1->id, 'annee_scolaire_id' => $annee1->id], ['classe_id' => $c1_6A->id]);
+
+        // Enfant 2 : École 2
+        $eleve2 = Eleve::firstOrCreate(['school_id' => $school2->id, 'nom' => 'Dupont', 'prenom' => 'Kofi'], [
+            'classe_id' => $c2_2nde->id, 'date_naissance' => '2010-07-22', 'matricule' => 'ELV-' . strtoupper(Str::random(6)), 'sexe' => 'M', 'active' => true
+        ]);
+        $eleve2->parents()->syncWithoutDetaching([$parentSofiya->id]);
+        EleveClasse::firstOrCreate(['eleve_id' => $eleve2->id, 'annee_scolaire_id' => $annee2->id], ['classe_id' => $c2_2nde->id]);
+
+        // === SUBSCRIPTIONS ===
+        $sub1 = Subscription::firstOrCreate(['eleve_id' => $eleve1->id, 'annee_scolaire_id' => $annee1->id], ['classe_id' => $c1_6A->id, 'inscrit' => true, 'montant_mensuel' => 25000]);
+        $sub2 = Subscription::firstOrCreate(['eleve_id' => $eleve2->id, 'annee_scolaire_id' => $annee2->id], ['classe_id' => $c2_2nde->id, 'inscrit' => true, 'montant_mensuel' => 30000]);
+
+        // === NOTES pour Amina (École 1) ===
+        $periode1 = $annee1->periodes()->first();
+        $matieres1 = [$matMath, $matFr, $matAngl];
+        $types = [
+            ['type' => 'composition', 'titre' => 'Composition du 1er trimestre'],
+            ['type' => 'interrogation', 'titre' => 'Interrogation'],
+            ['type' => 'devoir_surveille', 'titre' => 'Devoir surveillé'],
         ];
+        foreach ($matieres1 as $i => $mat) {
+            $t = $types[$i % 3];
+            $eval = Evaluation::firstOrCreate(['school_id' => $school1->id, 'classe_id' => $c1_6A->id, 'matiere_id' => $mat->id, 'titre' => $t['titre'] . ' en ' . $mat->libelle], [
+                'periode_id' => $periode1?->id, 'annee_scolaire_id' => $annee1->id, 'type' => $t['type'], 'date' => now()->subDays(rand(5, 40))->toDateString(), 'coefficient' => rand(1, 3), 'note_sur' => 20
+            ]);
+            Note::firstOrCreate(['evaluation_id' => $eval->id, 'eleve_id' => $eleve1->id], ['note' => rand(80, 180) / 10, 'appreciation' => ['Très bien', 'Bien', 'Passable'][rand(0, 2)]]);
+        }
 
-        $createdParents = [];
-        foreach ($enfants as $e) {
-            $parent = ParentModel::firstOrCreate(
-                ['telephone' => $e['parent_phone']],
-                ['code' => strtoupper(Str::random(4) . '-' . Str::random(4)), 'active' => true, 'whatsapp_activated' => true]
-            );
-            $createdParents[$e['parent_phone']] = $parent;
+        // Examens à venir Amina
+        Evaluation::firstOrCreate(['school_id' => $school1->id, 'classe_id' => $c1_6A->id, 'matiere_id' => $matMath->id, 'titre' => 'Composition du 3ème trimestre en Maths'], [
+            'periode_id' => $periode1?->id, 'annee_scolaire_id' => $annee1->id, 'type' => 'composition', 'date' => now()->addDays(10)->toDateString(), 'coefficient' => 2, 'note_sur' => 20
+        ]);
 
-            $eleve = Eleve::firstOrCreate(
-                ['school_id' => $school->id, 'nom' => $e['nom'], 'prenom' => $e['prenom']],
-                [
-                    'classe_id' => $e['classe']->id,
-                    'date_naissance' => now()->subYears($e['age'])->toDateString(),
-                    'matricule' => 'ELV-' . strtoupper(Str::random(6)),
-                    'sexe' => $e['sexe'],
-                    'active' => true,
-                ]
-            );
-            $eleve->parents()->syncWithoutDetaching([$parent->id]);
+        // === NOTES pour Kofi (École 2) ===
+        $periode2 = $annee2->periodes()->first();
+        $matieres2 = [$matMath2, $matPhys, $matSVT];
+        foreach ($matieres2 as $i => $mat) {
+            $t = $types[$i % 3];
+            $eval = Evaluation::firstOrCreate(['school_id' => $school2->id, 'classe_id' => $c2_2nde->id, 'matiere_id' => $mat->id, 'titre' => $t['titre'] . ' en ' . $mat->libelle], [
+                'periode_id' => $periode2?->id, 'annee_scolaire_id' => $annee2->id, 'type' => $t['type'], 'date' => now()->subDays(rand(5, 40))->toDateString(), 'coefficient' => rand(1, 3), 'note_sur' => 20
+            ]);
+            Note::firstOrCreate(['evaluation_id' => $eval->id, 'eleve_id' => $eleve2->id], ['note' => rand(80, 180) / 10, 'appreciation' => ['Très bien', 'Bien', 'Passable'][rand(0, 2)]]);
+        }
 
-            \App\Models\EleveClasse::firstOrCreate(
-                ['eleve_id' => $eleve->id, 'annee_scolaire_id' => $annee->id],
-                ['classe_id' => $e['classe']->id]
-            );
+        // Examens à venir Kofi
+        Evaluation::firstOrCreate(['school_id' => $school2->id, 'classe_id' => $c2_2nde->id, 'matiere_id' => $matMath2->id, 'titre' => 'Interrogation en Maths'], [
+            'periode_id' => $periode2?->id, 'annee_scolaire_id' => $annee2->id, 'type' => 'interrogation', 'date' => now()->addDays(5)->toDateString(), 'coefficient' => 1, 'note_sur' => 20
+        ]);
 
-            $sub = Subscription::firstOrCreate(
-                ['eleve_id' => $eleve->id, 'annee_scolaire_id' => $annee->id],
-                ['classe_id' => $e['classe']->id, 'inscrit' => true, 'montant_mensuel' => 25000]
-            );
-
-            // Notes
-            $matieres = [$matiereMath, $matiereFr, $matiereAngl];
-            $types = [
-                ['type' => 'composition', 'titre' => 'Composition du 1er trimestre'],
-                ['type' => 'interrogation', 'titre' => 'Interrogation'],
-                ['type' => 'devoir_surveille', 'titre' => 'Devoir surveillé'],
-            ];
-            $periode = $annee->periodes()->first();
-
-            foreach ($matieres as $i => $mat) {
-                $typeInfo = $types[$i % count($types)];
-                $eval = Evaluation::firstOrCreate(
-                    ['school_id' => $school->id, 'classe_id' => $e['classe']->id, 'matiere_id' => $mat->id, 'titre' => $typeInfo['titre'] . ' en ' . $mat->libelle],
-                    [
-                        'periode_id' => $periode?->id,
-                        'annee_scolaire_id' => $annee->id,
-                        'type' => $typeInfo['type'],
-                        'date' => now()->subDays(rand(5, 40))->toDateString(),
-                        'coefficient' => rand(1, 3),
-                        'note_sur' => 20,
-                    ]
-                );
-                Note::firstOrCreate(
-                    ['evaluation_id' => $eval->id, 'eleve_id' => $eleve->id],
-                    ['note' => rand(80, 180) / 10, 'appreciation' => ['Très bien', 'Bien', 'Passable', 'Assez bien', 'Excellent'][rand(0, 4)]]
-                );
-            }
-
-            // Examens à venir
-            if ($matieres->count() >= 2) {
-                Evaluation::firstOrCreate(
-                    ['school_id' => $school->id, 'classe_id' => $e['classe']->id, 'matiere_id' => $matieres[0]->id, 'titre' => 'Composition du 3ème trimestre en ' . $matieres[0]->libelle],
-                    [
-                        'periode_id' => $periode?->id,
-                        'annee_scolaire_id' => $annee->id,
-                        'type' => 'composition',
-                        'date' => now()->addDays(10)->toDateString(),
-                        'coefficient' => 2,
-                        'note_sur' => 20,
-                    ]
-                );
-                Evaluation::firstOrCreate(
-                    ['school_id' => $school->id, 'classe_id' => $e['classe']->id, 'matiere_id' => $matieres[1]->id, 'titre' => 'Interrogation en ' . $matieres[1]->libelle],
-                    [
-                        'periode_id' => $periode?->id,
-                        'annee_scolaire_id' => $annee->id,
-                        'type' => 'interrogation',
-                        'date' => now()->addDays(5)->toDateString(),
-                        'coefficient' => 1,
-                        'note_sur' => 20,
-                    ]
-                );
-            }
-
-            // Absences
+        // === ABSENCES ===
+        foreach ([$eleve1, $eleve2] as $eleve) {
+            $schoolId = $eleve->school_id;
+            $classeId = $eleve->classe_id;
+            $anneeId = $schoolId === $school1->id ? $annee1->id : $annee2->id;
             for ($i = 0; $i < 3; $i++) {
-                Presence::create([
-                    'school_id' => $school->id,
-                    'classe_id' => $e['classe']->id,
-                    'eleve_id' => $eleve->id,
-                    'annee_scolaire_id' => $annee->id,
-                    'date' => now()->subDays(rand(1, 30))->toDateString(),
-                    'est_present' => false,
-                    'remarque' => ['Absence non justifiée', 'Absence justifiée (certificat médical)', 'Retard (30 min)'][rand(0, 2)],
-                ]);
+                Presence::create(['school_id' => $schoolId, 'classe_id' => $classeId, 'eleve_id' => $eleve->id, 'annee_scolaire_id' => $anneeId, 'date' => now()->subDays(rand(1, 30))->toDateString(), 'est_present' => false, 'remarque' => ['Absence non justifiée', 'Absence justifiée', 'Retard'][rand(0, 2)]]);
             }
+        }
 
-            // Remarques
-            foreach ([$profKofi, $profAdjoa] as $prof) {
-                Remarque::firstOrCreate(
-                    ['eleve_id' => $eleve->id, 'prof_id' => $prof->id, 'type' => 'comportement'],
-                    [
-                        'school_id' => $school->id,
-                        'classe_id' => $e['classe']->id,
-                        'contenu' => "{$e['prenom']} est un élève sérieux et attentif en classe.",
-                        'visible_parent' => true,
-                    ]
-                );
-            }
+        // === REMARQUES ===
+        Remarque::create(['eleve_id' => $eleve1->id, 'prof_id' => $profKofi->id, 'school_id' => $school1->id, 'classe_id' => $c1_6A->id, 'type' => 'comportement', 'contenu' => 'Amina est une élève sérieuse et attentive.', 'visible_parent' => true]);
+        Remarque::create(['eleve_id' => $eleve2->id, 'prof_id' => $profKofi->id, 'school_id' => $school2->id, 'classe_id' => $c2_2nde->id, 'type' => 'academique', 'contenu' => 'Kofi doit fournir plus d\'efforts en maths.', 'visible_parent' => true]);
 
-            // Frais
+        // === FRAIS + PAIEMENTS ===
+        foreach ([[$eleve1, $sub1, $c1_6A, $school1, $annee1], [$eleve2, $sub2, $c2_2nde, $school2, $annee2]] as [$eleve, $sub, $classe, $school, $annee]) {
             $fraisItems = [
                 ['libelle' => 'Scolarité', 'type' => 'scolarite', 'montant' => 75000],
                 ['libelle' => 'Frais d\'inscription', 'type' => 'inscription', 'montant' => 15000],
                 ['libelle' => 'Assurance scolaire', 'type' => 'assurance', 'montant' => 5000],
                 ['libelle' => 'Uniforme scolaire', 'type' => 'tenue', 'montant' => 12000],
             ];
-
             $createdFrais = [];
             foreach ($fraisItems as $fd) {
-                $frais = Frais::firstOrCreate(
-                    ['school_id' => $school->id, 'libelle' => $fd['libelle']],
-                    ['type' => $fd['type'], 'montant' => $fd['montant'], 'actif' => true]
-                );
-                $frais->classes()->syncWithoutDetaching([$e['classe']->id]);
-                $createdFrais[] = $frais;
+                $f = Frais::firstOrCreate(['school_id' => $school->id, 'libelle' => $fd['libelle']], ['type' => $fd['type'], 'montant' => $fd['montant'], 'actif' => true]);
+                $f->classes()->syncWithoutDetaching([$classe->id]);
+                $createdFrais[] = $f;
             }
-
-            // Paiements
-            $paiements = [
-                ['frais_index' => 0, 'montant' => 50000],
-                ['frais_index' => 0, 'montant' => 25000],
-                ['frais_index' => 1, 'montant' => 15000],
-                ['frais_index' => 3, 'montant' => 12000],
-            ];
-            foreach ($paiements as $p) {
+            foreach ([['frais_index' => 0, 'montant' => 50000], ['frais_index' => 0, 'montant' => 25000], ['frais_index' => 1, 'montant' => 15000]] as $p) {
                 $f = $createdFrais[$p['frais_index']] ?? null;
-                if ($f) {
-                    SubscriptionPayment::firstOrCreate(
-                        ['subscription_id' => $sub->id, 'frais_id' => $f->id, 'montant' => $p['montant']],
-                        ['type' => 'frais', 'methode_paiement' => 'especes']
-                    );
-                }
+                if ($f) SubscriptionPayment::firstOrCreate(['subscription_id' => $sub->id, 'frais_id' => $f->id, 'montant' => $p['montant']], ['type' => 'frais', 'methode_paiement' => 'especes']);
             }
         }
 
         // === ANNONCES ===
-        Annonce::firstOrCreate(
-            ['school_id' => $school->id, 'titre' => 'Réunion parents-professeurs'],
-            ['user_id' => $admin->id, 'contenu' => 'Une réunion est prévue le 25 août à 15h.', 'type' => 'info', 'publie' => true]
-        );
-        Annonce::firstOrCreate(
-            ['school_id' => $school->id, 'titre' => 'Fête de fin d\'année'],
-            ['user_id' => $admin->id, 'contenu' => 'La cérémonie aura lieu le 30 juin à 9h.', 'type' => 'evenement', 'publie' => true]
-        );
+        Annonce::firstOrCreate(['school_id' => $school1->id, 'titre' => 'Réunion parents-professeurs'], ['user_id' => $admin1->id, 'contenu' => 'Réunion le 25 août à 15h.', 'type' => 'info', 'publie' => true]);
+        Annonce::firstOrCreate(['school_id' => $school2->id, 'titre' => 'Sortie scolaire'], ['user_id' => $admin2->id, 'contenu' => 'Sortie au musée le 30 janvier.', 'type' => 'evenement', 'publie' => true]);
 
         // === PÉRIODES ===
-        \App\Models\Periode::firstOrCreate(
-            ['school_id' => $school->id, 'annee_scolaire_id' => $annee->id, 'libelle' => '1er Trimestre'],
-            ['date_debut' => '2025-09-01', 'date_fin' => '2025-12-31']
-        );
-        \App\Models\Periode::firstOrCreate(
-            ['school_id' => $school->id, 'annee_scolaire_id' => $annee->id, 'libelle' => '2ème Trimestre'],
-            ['date_debut' => '2026-01-01', 'date_fin' => '2026-03-31']
-        );
-        \App\Models\Periode::firstOrCreate(
-            ['school_id' => $school->id, 'annee_scolaire_id' => $annee->id, 'libelle' => '3ème Trimestre'],
-            ['date_debut' => '2026-04-01', 'date_fin' => '2026-06-30']
-        );
+        foreach ([[$school1, $annee1], [$school2, $annee2]] as [$s, $a]) {
+            Periode::firstOrCreate(['school_id' => $s->id, 'annee_scolaire_id' => $a->id, 'libelle' => '1er Trimestre'], ['date_debut' => '2025-09-01', 'date_fin' => '2025-12-31']);
+            Periode::firstOrCreate(['school_id' => $s->id, 'annee_scolaire_id' => $a->id, 'libelle' => '2ème Trimestre'], ['date_debut' => '2026-01-01', 'date_fin' => '2026-03-31']);
+            Periode::firstOrCreate(['school_id' => $s->id, 'annee_scolaire_id' => $a->id, 'libelle' => '3ème Trimestre'], ['date_debut' => '2026-04-01', 'date_fin' => '2026-06-30']);
+        }
 
-        $this->command->info('✅ Données démo créées !');
+        $this->command->info('✅ Données créées !');
+        $this->command->info('');
         $this->command->info('📱 Numéros de test :');
-        $this->command->info('   Parent (2 enfants) : +228911111111');
-        $this->command->info('   Parent (1 enfant)  : +228922222222');
-        $this->command->info('   Parent (1 enfant)  : +228933333333');
-        $this->command->info('   Prof Kofi          : +22890680185');
-        $this->command->info('   Prof Adjoa         : +22890123456');
-        $this->command->info('   Prof Kossi         : +22890987654');
-        $this->command->info('   Admin              : admin@ecole-demo.tg / admin123');
+        $this->command->info('  Parent (2 enfants, 2 écoles) : +22899215580');
+        $this->command->info('  Prof Kofi (2 écoles, 6 classes) : +22890680185');
+        $this->command->info('  Superadmin : +22870077539');
+        $this->command->info('');
+        $this->command->info('🏫 Écoles :');
+        $this->command->info('  Collège Sainte Marie : 6ème A, 5ème B, 4ème A');
+        $this->command->info('  Lycée Moderne : 2nde A, 1ère C, Terminale D');
     }
 }
