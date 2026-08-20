@@ -54,8 +54,8 @@ class DemoSchoolSeeder extends Seeder
         $annee2 = AnneeScolaire::firstOrCreate(['school_id' => $school2->id, 'libelle' => '2025-2026'], ['active' => true]);
 
         // === SECTIONS ===
-        $sec1 = Section::firstOrCreate(['school_id' => $school1->id, 'nom' => 'Collège']);
-        $sec2 = Section::firstOrCreate(['school_id' => $school2->id, 'nom' => 'Lycée']);
+        $sec1 = Section::firstOrCreate(['school_id' => $school1->id, 'libelle' => 'Collège']);
+        $sec2 = Section::firstOrCreate(['school_id' => $school2->id, 'libelle' => 'Lycée']);
 
         // === CLASSES ÉCOLE 1 (3 classes) ===
         $c1_6A = Classe::firstOrCreate(['school_id' => $school1->id, 'section_id' => $sec1->id, 'libelle' => '6ème A', 'annee_scolaire_id' => $annee1->id]);
