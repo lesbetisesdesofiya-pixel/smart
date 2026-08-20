@@ -2623,7 +2623,8 @@ Que souhaitez-vous faire ?";
 
     private function sendProfMenuForSchool(WhatsAppConversation $conv, \App\Models\Prof $prof, \App\Models\School $school, bool $isParent): void
     {
-        $affectations = $prof->affectations()->where('school_id', $school->id)->with('classe')->get();
+        $schoolClasseIds = $school->classes()->pluck('id')->toArray();
+        $affectations = $prof->affectations()->whereIn('classe_id', $schoolClasseIds)->with(['classe', 'matiere'])->get();
         $classes = $affectations->pluck('classe')->filter()->unique('id');
 
         // Auto-select class if only one
