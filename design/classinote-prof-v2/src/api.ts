@@ -1,4 +1,4 @@
-const API_BASE = '/smart/public/api/v1';
+const API_BASE = '/api/v1';
 
 let lastActivityTime = Date.now();
 

@@ -22,7 +22,7 @@ export async function initFirebaseMessaging() {
     messaging = getMessaging(app);
     if (!('serviceWorker' in navigator)) return { messaging, registration: null };
     const swPaths = [
-      '/smart/public/app/prof/firebase-messaging-sw.js',
+      '/app/prof/firebase-messaging-sw.js',
       '/firebase-messaging-sw.js',
     ];
     for (const swUrl of swPaths) {

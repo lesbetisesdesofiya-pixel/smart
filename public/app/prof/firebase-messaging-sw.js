@@ -13,24 +13,41 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  const title = payload.notification?.title || 'ClassiNote Prof';
+  console.log('[SW] Background message received:', JSON.stringify(payload));
+  const title = payload.notification?.title || 'ClassiNote';
   const options = {
     body: payload.notification?.body || '',
-    icon: '/smart/public/app/prof/icons/icon-192x192.png',
-    badge: '/smart/public/app/prof/icons/badge-72x72.png',
+    icon: '/icon-192x192.png',
+    badge: '/badge-72x72.png',
     data: payload.data || {},
   };
   self.registration.showNotification(title, options);
 });
 
+self.addEventListener('push', (event) => {
+  console.log('[SW] Push event received:', event.data ? event.data.text() : 'no data');
+});
+
+self.addEventListener('pushsubscriptionchange', (event) => {
+  console.log('[SW] Push subscription changed');
+});
+
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const data = event.notification.data;
-  let url = '/smart/public/app/prof/';
+  let url = '/smart/public/app/parent/';
 
   if (data?.type) {
-    if (data.type.startsWith('prof_')) {
-      url = '/smart/public/app/prof/';
+    switch (data.type) {
+      case 'parent_blocked':
+      case 'parent_new_grade':
+      case 'parent_new_remark':
+      case 'parent_absence':
+        url = '/smart/public/app/parent/';
+        break;
+      case 'parent_message':
+        url = '/smart/public/app/parent/';
+        break;
     }
   }
 

@@ -26,10 +26,10 @@ export async function initFirebaseMessaging() {
     }
 
     const swPaths = [
-      '/smart/public/app/parent/firebase-messaging-sw.js',
+      '/app/parent/firebase-messaging-sw.js',
       '/firebase-messaging-sw.js',
       '/smart/app/parent/firebase-messaging-sw.js',
-      '/smart/public/app/firebase-messaging-sw.js',
+      '/app/firebase-messaging-sw.js',
     ];
 
     for (const swUrl of swPaths) {
