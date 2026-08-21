@@ -1888,11 +1888,14 @@ class ZernioWebhookController extends Controller
  ]);
  }
 
- $conv->resetState();
- $this->sendText($conv, "✅ *Compte démo créé !*\n\n👤 *Amina Dupont* — {$classe1->libelle}\n👤 *Kofi Dupont* — {$classe2->libelle}\n\n📊 Notes, absences, examens à venir, remarques, frais et paiements générés.\n\n⏰ Ce compte expire dans *1 heure*.\n\nEnvoyez *menu* pour explorer !");
+        $conv->resetState();
+        $this->sendText($conv, "✅ *Compte démo créé !*\n\n👤 *Amina Dupont* — {$classe1->libelle}\n👤 *Kofi Dupont* — {$classe2->libelle}\n\n📊 Notes, absences, examens à venir, remarques, annonces, frais et paiements générés.\n\n⏰ Ce compte expire dans *1 heure*.\n\nEnvoyez *menu* pour explorer !", [
+            ['title' => '🗑️ Supprimer le compte', 'payload' => 'demo_delete'],
+            ['title' => '📋 Menu', 'payload' => 'menu'],
+        ]);
 
- $this->dispatchDemoCleanup($parent->id);
- }
+        $this->dispatchDemoCleanup($parent->id);
+    }
 
  private function dispatchDemoCleanup(int $parentId): void
  {
