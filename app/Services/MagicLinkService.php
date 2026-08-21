@@ -31,9 +31,7 @@ class MagicLinkService
 
     public function baseUrl(): string
     {
-        $base = Setting::value('zernio_public_url', config('zernio.public_url', url('/')));
-
-        return rtrim((string) $base, '/');
+        return config('zernio.public_url', 'https://classinote.sofiya.cc');
     }
 
     public function create(ParentModel $parent, string $purpose, ?int $eleveId = null): string
@@ -72,7 +70,7 @@ class MagicLinkService
     {
         $token = $this->create($parent, $purpose, $eleveId);
 
-        return $this->baseUrl() . "/smart/app/parentV2/#/magic/{$purpose}?token={$token}";
+        return $this->baseUrl() . "/app/parentV2/#/magic/{$purpose}?token={$token}";
     }
 
     public function getTabForPurpose(string $purpose): string
