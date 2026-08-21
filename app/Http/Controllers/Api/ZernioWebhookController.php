@@ -1030,11 +1030,11 @@ class ZernioWebhookController extends Controller
  private function buildNotesPreview(Eleve $eleve, ?\App\Models\AnneeScolaire $anneeActive): ?array
  {
  $notes = Note::where('eleve_id', $eleve->id)
- ->when($anneeActive, fn($q) => $q->whereHas('evaluation', fn($eq) => $eq->where('annee_scolaire_id', $anneeActive->id)))
- ->with('evaluation.matiere', 'evaluation.periode')
- ->latest('id')
- ->limit(3)
- ->get();
+            ->when($anneeActive, fn($q) => $q->whereHas('evaluation', fn($eq) => $eq->where('annee_scolaire_id', $anneeActive->id)))
+            ->with('evaluation.matiere', 'evaluation.periode')
+            ->latest('id')
+            ->limit(6)
+            ->get();
 
  if ($notes->isEmpty()) return null;
 
