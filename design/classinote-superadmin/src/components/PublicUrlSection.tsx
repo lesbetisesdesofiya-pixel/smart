@@ -104,7 +104,7 @@ export const PublicUrlSection: React.FC = () => {
                 type="url"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://votre-domaine.example/smart/public"
+                placeholder="https://votre-domaine.example"
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
               <p className="text-[11px] text-slate-400 mt-1">

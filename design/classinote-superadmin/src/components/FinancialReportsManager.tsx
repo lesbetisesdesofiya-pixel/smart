@@ -288,7 +288,7 @@ export const FinancialReportsManager: React.FC = () => {
       params.set("month", filterMonth);
       params.set("year", filterYear);
     }
-    const url = `/smart/public/api/v1/superadmin/financial-reports/export/${format}?${params.toString()}`;
+            const url = `/api/v1/superadmin/financial-reports/export/${format}?${params.toString()}`;
 
     try {
       const res = await fetch(url, {

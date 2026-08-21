@@ -63,7 +63,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/smart/public/api/v1/auth/superadmin/login', {
+      const res = await fetch('/api/v1/auth/superadmin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         credentials: 'include',

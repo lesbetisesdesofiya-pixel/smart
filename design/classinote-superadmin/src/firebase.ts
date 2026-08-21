@@ -24,7 +24,7 @@ export async function initFirebaseMessaging() {
     if (!('serviceWorker' in navigator)) { return { messaging, registration: null }; }
 
     const swPaths = [
-      '/smart/public/app/superadmin/firebase-messaging-sw.js',
+      '/app/superadmin/firebase-messaging-sw.js',
       '/firebase-messaging-sw.js',
     ];
 

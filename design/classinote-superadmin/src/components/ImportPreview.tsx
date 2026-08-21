@@ -115,7 +115,7 @@ export const ImportPreview: React.FC<ImportPreviewProps> = ({
     setImporting(true);
     setError(null);
     try {
-      const res = await fetch(`/smart/public/api/v1/superadmin/schools/${schoolId}/import`, {
+      const res = await fetch(`/api/v1/superadmin/schools/${schoolId}/import`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
