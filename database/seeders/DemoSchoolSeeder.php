@@ -203,10 +203,89 @@ class DemoSchoolSeeder extends Seeder
         Annonce::firstOrCreate(['school_id' => $school1->id, 'titre' => 'Réunion parents-professeurs'], ['user_id' => $admin1->id, 'contenu' => 'Réunion le 25 août à 15h.', 'type' => 'info', 'publie' => true]);
         Annonce::firstOrCreate(['school_id' => $school2->id, 'titre' => 'Sortie scolaire'], ['user_id' => $admin2->id, 'contenu' => 'Sortie au musée le 30 janvier.', 'type' => 'info', 'publie' => true]);
 
+        // === PARENT ARTHUR (+22890376872) — 2 enfants dans la même école ===
+        $parentArthur = ParentModel::firstOrCreate(['telephone' => '+22890376872'], [
+            'code' => strtoupper(Str::random(4) . '-' . Str::random(4)), 'active' => true, 'whatsapp_activated' => true
+        ]);
+
+        // Enfant 1 : Arthur ABI — École 1, 6ème A
+        $eleveArthur = Eleve::firstOrCreate(['school_id' => $school1->id, 'nom' => 'ABI', 'prenom' => 'Arthur'], [
+            'classe_id' => $c1_6A->id, 'date_naissance' => '2013-05-10', 'matricule' => 'ELV-' . strtoupper(Str::random(6)), 'sexe' => 'M', 'active' => true
+        ]);
+        $eleveArthur->parents()->syncWithoutDetaching([$parentArthur->id]);
+        EleveClasse::firstOrCreate(['eleve_id' => $eleveArthur->id, 'annee_scolaire_id' => $annee1->id], ['classe_id' => $c1_6A->id]);
+
+        // Enfant 2 : Mickael ABI — École 1, 5ème B
+        $eleveMickael = Eleve::firstOrCreate(['school_id' => $school1->id, 'nom' => 'ABI', 'prenom' => 'Mickael'], [
+            'classe_id' => $c1_5B->id, 'date_naissance' => '2011-09-22', 'matricule' => 'ELV-' . strtoupper(Str::random(6)), 'sexe' => 'M', 'active' => true
+        ]);
+        $eleveMickael->parents()->syncWithoutDetaching([$parentArthur->id]);
+        EleveClasse::firstOrCreate(['eleve_id' => $eleveMickael->id, 'annee_scolaire_id' => $annee1->id], ['classe_id' => $c1_5B->id]);
+
+        // Subscriptions
+        $subArthur = Subscription::firstOrCreate(['eleve_id' => $eleveArthur->id, 'annee_scolaire_id' => $annee1->id], ['classe_id' => $c1_6A->id, 'inscrit' => true, 'montant_mensuel' => 25000]);
+        $subMickael = Subscription::firstOrCreate(['eleve_id' => $eleveMickael->id, 'annee_scolaire_id' => $annee1->id], ['classe_id' => $c1_5B->id, 'inscrit' => true, 'montant_mensuel' => 25000]);
+
+        // Notes pour Arthur
+        foreach ([$matMath, $matFr, $matAngl] as $i => $mat) {
+            $t = $types[$i % 3];
+            $eval = Evaluation::firstOrCreate(['school_id' => $school1->id, 'classe_id' => $c1_6A->id, 'matiere_id' => $mat->id, 'titre' => $t['titre'] . ' en ' . $mat->libelle], [
+                'periode_id' => $p1_1->id, 'annee_scolaire_id' => $annee1->id, 'type' => $t['type'], 'date' => now()->subDays(rand(5, 40))->toDateString(), 'coefficient' => rand(1, 3), 'note_sur' => 20
+            ]);
+            Note::firstOrCreate(['evaluation_id' => $eval->id, 'eleve_id' => $eleveArthur->id], ['note' => rand(80, 180) / 10, 'appreciation' => ['Très bien', 'Bien', 'Passable'][rand(0, 2)]]);
+        }
+
+        // Notes pour Mickael
+        foreach ([$matMath, $matFr, $matAngl] as $i => $mat) {
+            $t = $types[$i % 3];
+            $eval = Evaluation::firstOrCreate(['school_id' => $school1->id, 'classe_id' => $c1_5B->id, 'matiere_id' => $mat->id, 'titre' => $t['titre'] . ' en ' . $mat->libelle], [
+                'periode_id' => $p1_1->id, 'annee_scolaire_id' => $annee1->id, 'type' => $t['type'], 'date' => now()->subDays(rand(5, 40))->toDateString(), 'coefficient' => rand(1, 3), 'note_sur' => 20
+            ]);
+            Note::firstOrCreate(['evaluation_id' => $eval->id, 'eleve_id' => $eleveMickael->id], ['note' => rand(80, 180) / 10, 'appreciation' => ['Très bien', 'Bien', 'Passable'][rand(0, 2)]]);
+        }
+
+        // Examens à venir pour les 2 enfants
+        Evaluation::firstOrCreate(['school_id' => $school1->id, 'classe_id' => $c1_6A->id, 'matiere_id' => $matMath->id, 'titre' => 'Examen final Maths — 6ème A'], [
+            'periode_id' => $p1_3->id, 'annee_scolaire_id' => $annee1->id, 'type' => 'composition', 'date' => now()->addDays(15)->toDateString(), 'coefficient' => 2, 'note_sur' => 20
+        ]);
+        Evaluation::firstOrCreate(['school_id' => $school1->id, 'classe_id' => $c1_5B->id, 'matiere_id' => $matFr->id, 'titre' => 'Examen final Français — 5ème B'], [
+            'periode_id' => $p1_3->id, 'annee_scolaire_id' => $annee1->id, 'type' => 'composition', 'date' => now()->addDays(20)->toDateString(), 'coefficient' => 2, 'note_sur' => 20
+        ]);
+
+        // Absences pour les 2 enfants
+        foreach ([$eleveArthur, $eleveMickael] as $eleve) {
+            for ($i = 0; $i < 3; $i++) {
+                Presence::create(['school_id' => $school1->id, 'classe_id' => $eleve->classe_id, 'eleve_id' => $eleve->id, 'annee_scolaire_id' => $annee1->id, 'date' => now()->subDays(rand(1, 30))->toDateString(), 'est_present' => false, 'remarque' => ['Absence non justifiée', 'Absence justifiée', 'Retard'][rand(0, 2)]]);
+            }
+        }
+
+        // Remarques pour les 2 enfants
+        foreach ([$eleveArthur, $eleveMickael] as $eleve) {
+            Remarque::create(['eleve_id' => $eleve->id, 'prof_id' => $profKofi->id, 'school_id' => $school1->id, 'classe_id' => $eleve->classe_id, 'type' => 'comportement', 'contenu' => "{$eleve->prenom} est un élève sérieux et attentif.", 'visible_parent' => true]);
+        }
+
+        // Frais + Paiements pour les 2 enfants
+        foreach ([$eleveArthur, $eleveMickael] as $i => $eleve) {
+            $sub = $i === 0 ? $subArthur : $subMickael;
+            $createdFrais2 = [];
+            foreach ($fraisItems as $fd) {
+                $f = Frais::firstOrCreate(['school_id' => $school1->id, 'libelle' => $fd['libelle']], ['type' => $fd['type'], 'montant' => $fd['montant'], 'actif' => true]);
+                $f->classes()->syncWithoutDetaching([$eleve->classe_id]);
+                $createdFrais2[] = $f;
+            }
+            foreach ([['frais_index' => 0, 'montant' => 40000, 'type' => 'scolarite'], ['frais_index' => 1, 'montant' => 15000, 'type' => 'frais']] as $p) {
+                $f = $createdFrais2[$p['frais_index']] ?? null;
+                if ($f) {
+                    SubscriptionPayment::firstOrCreate(['subscription_id' => $sub->id, 'frais_id' => $f->id, 'montant' => $p['montant']], ['type' => $p['type'], 'methode_paiement' => 'especes']);
+                }
+            }
+        }
+
         $this->command->info('✅ Données créées !');
         $this->command->info('');
         $this->command->info('📱 Numéros de test :');
         $this->command->info('  Parent (2 enfants, 2 écoles) : +22899215580');
+        $this->command->info('  Parent Arthur (2 enfants, même école) : +22890376872');
         $this->command->info('  Prof Kofi (2 écoles, 6 classes) : +22890680185');
         $this->command->info('  Superadmin : +22870077539');
         $this->command->info('');
