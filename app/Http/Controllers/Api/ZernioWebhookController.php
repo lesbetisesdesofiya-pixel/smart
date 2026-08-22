@@ -2737,11 +2737,11 @@ Que souhaitez-vous faire ?";
  'expires_at' => now()->addMinutes(10),
  ]);
 
- $url = config('zernio.public_url') . "/smart/app/profV2/#/magic/prof_dashboard?token={$token}";
+        $url = config('zernio.public_url') . "/app/profV2/#/magic/prof_dashboard?token={$token}";
 
- $conv->setState('awaiting_prof_action', ['prof_id' => $prof->id, 'role' => 'prof']);
+        $conv->setState('awaiting_prof_action', ['prof_id' => $prof->id, 'role' => 'prof']);
 
- $this->sendText($conv, "🏠 *Tableau de bord*\n\nCliquez ci-dessous pour accéder à votre tableau de bord.\n\n⏰ Ce lien expire dans 10 minutes.", [
+        $this->sendText($conv, "🏠 *Tableau de bord*\n\nCliquez ci-dessous pour accéder à votre tableau de bord.\n\n⏰ Ce lien expire dans 10 minutes.", [], [
  ['title' => '🔄 Menu prof', 'payload' => 'menu'],
  ['title' => '🏫 Changer classe', 'payload' => 'menu'],
  ['title' => '👨 Mode Parent', 'payload' => 'role_parent'],
@@ -2780,7 +2780,7 @@ Que souhaitez-vous faire ?";
  'expires_at' => now()->addMinutes(10),
  ]);
 
- $url = config('zernio.public_url') . "/smart/app/profV2/#/magic/prof_absences?token={$token}&classe_id={$classeId}";
+ $url = config('zernio.public_url') . "/app/profV2/#/magic/prof_absences?token={$token}&classe_id={$classeId}";
 
  $conv->setState('awaiting_prof_action', ['prof_id' => $prof->id, 'classe_id' => $classeId, 'role' => 'prof']);
 

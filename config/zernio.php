@@ -12,6 +12,6 @@ return [
 
     'php_binary' => env('ZERNIO_PHP_BINARY', PHP_BINARY),
 
-    'public_url' => env('ZERNIO_PUBLIC_URL'),
+    'public_url' => env('ZERNIO_PUBLIC_URL', 'https://classinote.sofiya.cc'),
 
 ];
