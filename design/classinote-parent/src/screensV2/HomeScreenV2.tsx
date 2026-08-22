@@ -3,6 +3,7 @@ import { apiFetch } from '../api';
 
 interface HomeScreenV2Props {
   onNavigate: (tab: string) => void;
+  onLogout: () => void;
 }
 
 interface NewItems {
@@ -20,7 +21,7 @@ function setLastSeen(type: string) {
   try { localStorage.setItem(`classinote_last_seen_${type}`, Date.now().toString()); } catch {}
 }
 
-export const HomeScreenV2: React.FC<HomeScreenV2Props> = ({ onNavigate }) => {
+export const HomeScreenV2: React.FC<HomeScreenV2Props> = ({ onNavigate, onLogout }) => {
   const [parentName, setParentName] = useState('');
   const [children, setChildren] = useState<any[]>([]);
   const [activeChildId, setActiveChildId] = useState('');
@@ -168,25 +169,41 @@ export const HomeScreenV2: React.FC<HomeScreenV2Props> = ({ onNavigate }) => {
 
   return (
     <div className="px-5 pb-28 max-w-lg mx-auto space-y-5">
-      {/* Child selector */}
-      {children.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1">
-          {children.map(child => (
-            <button
-              key={child.id}
-              onClick={() => setActiveChildId(child.id)}
-              className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all ${
-                child.id === activeChildId
-                  ? 'bg-[#002366] text-white shadow-md'
-                  : 'bg-white text-[#375ca6] border border-[#375ca6]/20 hover:border-[#375ca6]/40'
-              }`}
-            >
-              {child.name.split(' ')[0]}
-              {child.classe && <span className="opacity-70 ml-1">({child.classe})</span>}
-            </button>
-          ))}
+      {/* Header with child selector and logout */}
+      <div className="flex items-center justify-between pt-1">
+        <div className="flex-1 overflow-x-auto no-scrollbar">
+          {children.length > 1 ? (
+            <div className="flex gap-2">
+              {children.map(child => (
+                <button
+                  key={child.id}
+                  onClick={() => setActiveChildId(child.id)}
+                  className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all ${
+                    child.id === activeChildId
+                      ? 'bg-[#002366] text-white shadow-md'
+                      : 'bg-white text-[#375ca6] border border-[#375ca6]/20 hover:border-[#375ca6]/40'
+                  }`}
+                >
+                  {child.name.split(' ')[0]}
+                  {child.classe && <span className="opacity-70 ml-1">({child.classe})</span>}
+                </button>
+              ))}
+            </div>
+          ) : children.length === 1 ? (
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-[#002366]">{children[0].name}</span>
+              {children[0].classe && <span className="text-xs text-gray-400">({children[0].classe})</span>}
+            </div>
+          ) : null}
         </div>
-      )}
+        <button
+          onClick={onLogout}
+          className="shrink-0 ml-3 w-9 h-9 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-gray-400 hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50 transition-all"
+          title="Deconnexion"
+        >
+          <span className="material-symbols-outlined text-lg">logout</span>
+        </button>
+      </div>
 
       {/* Status card */}
       {activeChild && !activeChild.locked && (

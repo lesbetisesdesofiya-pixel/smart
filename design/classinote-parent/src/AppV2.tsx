@@ -240,6 +240,12 @@ export default function AppV2() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifCount, setNotifCount] = useState(0);
 
+  const handleLogout = useCallback(() => {
+    try { clearAuthData(); } catch {}
+    try { localStorage.removeItem('classinote_parent_activated'); } catch {}
+    setIsLoggedIn(false);
+  }, []);
+
   // Magic link: consume token and reload
   if (magicRoute) {
     return <MagicConsumeScreen purpose={magicRoute.purpose} token={magicRoute.token} />;
@@ -264,17 +270,19 @@ export default function AppV2() {
       setNotifOpen={setNotifOpen}
       notifCount={notifCount}
       setNotifCount={setNotifCount}
+      onLogout={handleLogout}
     />
   );
 }
 
-function Dashboard({ tab, setTab, notifOpen, setNotifOpen, notifCount, setNotifCount }: {
+function Dashboard({ tab, setTab, notifOpen, setNotifOpen, notifCount, setNotifCount, onLogout }: {
   tab: string;
   setTab: (t: string) => void;
   notifOpen: boolean;
   setNotifOpen: (v: boolean) => void;
   notifCount: number;
   setNotifCount: (v: number) => void;
+  onLogout: () => void;
 }) {
   const [timetable] = useState<TimetableClass[]>(initialTimetable);
   const [chatOpen, setChatOpen] = useState(false);
@@ -303,7 +311,7 @@ function Dashboard({ tab, setTab, notifOpen, setNotifOpen, notifCount, setNotifC
     <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col">
       {!chatOpen && <Header tab={tab} onNavigate={setTab} onNotifications={() => setNotifOpen(true)} notifCount={notifCount} />}
       <main className="flex-1 w-full">
-        {tab === 'accueil' && <HomeScreenV2 onNavigate={setTab} />}
+        {tab === 'accueil' && <HomeScreenV2 onNavigate={setTab} onLogout={onLogout} />}
         {tab === 'notes' && <NotesScreenV2 />}
         {tab === 'avis' && <AvisScreenV2 />}
         {tab === 'paiements' && <PaiementsScreenV2 />}
