@@ -431,22 +431,40 @@ class ZernioWebhookController extends Controller
  $conv->setState('awaiting_activation_confirm');
  }
 
- private function offerActivation(WhatsAppConversation $conv, ParentModel $parent): void
- {
- $children = $this->getUnlockedChildren($parent);
+    private function offerActivation(WhatsAppConversation $conv, ParentModel $parent): void
+    {
+        $children = $this->getUnlockedChildren($parent);
 
- $lines = ["👋 *Bienvenue sur ClassiNote !*\n"];
- $lines[] = "Nous avons trouvé les enfants suivants associés à votre numéro :";
+        if (!$parent->activation_token) {
+            $parent->update(['activation_token' => bin2hex(random_bytes(32))]);
+        }
 
- foreach ($children as $child) {
- $classe = $child->classe?->libelle ?? '—';
- $lines[] = "\n👦 *{$child->nom_complet}*\n Classe : {$classe}";
- }
+        $url = config('zernio.public_url') . '/app/activate/?token=' . $parent->activation_token;
 
- $lines[] = "\nSouhaitez-vous activer votre compte pour suivre leur scolarité ?";
+        $lines = ["👋 *Bienvenue sur ClassiNote !*\n"];
+        $lines[] = "Nous avons trouvé les enfants suivants associés à votre numéro :";
 
- $this->sendText($conv, implode("\n", $lines), $this->activationButtons());
- }
+        foreach ($children as $child) {
+            $classe = $child->classe?->libelle ?? '—';
+            $lines[] = "\n👦 *{$child->nom_complet}*\n   Classe : {$classe}";
+        }
+
+        $lines[] = "\n📲 Pour activer votre compte et suivre leur scolarité, installez l'application :";
+
+        $conv->setState('awaiting_activation_confirm');
+
+        $this->sendText($conv, implode("\n", $lines), [], [
+            'type' => 'cta_url',
+            'body' => ['text' => implode("\n", $lines)],
+            'action' => [
+                'name' => 'cta_url',
+                'parameters' => [
+                    'display_text' => 'Activer ClassiNote',
+                    'url' => $url,
+                ],
+            ],
+        ]);
+    }
 
  private function activationButtons(): array
  {

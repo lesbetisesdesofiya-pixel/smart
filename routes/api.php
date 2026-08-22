@@ -27,6 +27,11 @@ Route::prefix('v1')->group(function () {
     // ─── Auth ───────────────────────────────────────────
     Route::post('auth/login', [AuthController::class, 'loginGeneric'])
         ->middleware('throttle:5,1');
+
+    // ─── Parent Activation ──────────────────────────────
+    Route::post('parents/activate-step', [\App\Http\Controllers\Api\ParentActivationController::class, 'handleActivationStep']);
+    Route::get('parents/activate-status', [\App\Http\Controllers\Api\ParentActivationController::class, 'checkStatus']);
+
     Route::post('auth/superadmin/login', [AuthController::class, 'loginSuperadmin'])
         ->middleware('throttle:5,1');
     Route::post('auth/admin/login', [AuthController::class, 'loginAdmin'])

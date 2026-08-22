@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClassiNote - Activation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #002366 0%, #1a3a7a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 24px;
+            padding: 40px 32px;
+            max-width: 440px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .logo span {
+            color: #f59e0b;
+        }
+
+        .subtitle {
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 36px;
+        }
+
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .step {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px 20px;
+            text-align: left;
+            transition: all 0.3s ease;
+        }
+
+        .step.completed {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.08);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .step.completed .step-number {
+            background: #22c55e;
+        }
+
+        .step-title {
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .step-desc {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-install {
+            background: #f59e0b;
+            color: #000;
+        }
+
+        .btn-install:hover {
+            background: #d97706;
+        }
+
+        .btn-notify {
+            background: #f59e0b;
+            color: #000;
+        }
+
+        .btn-notify:hover {
+            background: #d97706;
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-done {
+            background: #22c55e;
+            color: #fff;
+            cursor: default;
+        }
+
+        .success-box {
+            display: none;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 16px;
+            padding: 28px 20px;
+            margin-bottom: 24px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .success-box.visible {
+            display: block;
+        }
+
+        .success-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .success-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #22c55e;
+            margin-bottom: 8px;
+        }
+
+        .success-text {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.5;
+        }
+
+        .btn-go {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 14px 32px;
+            background: #22c55e;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn-go:hover {
+            background: #16a34a;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 14px;
+            padding: 40px 0;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #f59e0b;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .error-msg {
+            display: none;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #fca5a5;
+        }
+
+        .error-msg.visible {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">Classi<span>Note</span></div>
+        <p class="subtitle">Configuration de votre espace parent</p>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            Vérification...
+        </div>
+
+        <div id="error" class="error-msg"></div>
+
+        <div id="stepsContainer" style="display:none;">
+            <div class="steps">
+                <div class="step" id="step1">
+                    <div class="step-header">
+                        <div class="step-number" id="step1Num">1</div>
+                        <div class="step-title">Installer l'application</div>
+                    </div>
+                    <p class="step-desc">Installez ClassiNote sur votre appareil pour un accès rapide et les notifications.</p>
+                    <button class="btn btn-install" id="btnInstall" disabled>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Installer
+                    </button>
+                </div>
+
+                <div class="step" id="step2">
+                    <div class="step-header">
+                        <div class="step-number" id="step2Num">2</div>
+                        <div class="step-title">Activer les notifications</div>
+                    </div>
+                    <p class="step-desc">Recevez les alertes importantes concernant votre enfant.</p>
+                    <button class="btn btn-notify" id="btnNotify" disabled>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                        Activer
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="successBox" class="success-box">
+            <div class="success-icon">&#10003;</div>
+            <div class="success-title">Tout est pr&ecirc;t !</div>
+            <p class="success-text">Votre espace parent est activ&eacute;. Vous pouvez maintenant acc&eacute;der &agrave; l'application.</p>
+            <a href="/app/parentV2/" class="btn-go">Acc&eacute;der &agrave; l'application</a>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get('token');
+
+            const elLoading = document.getElementById('loading');
+            const elError = document.getElementById('error');
+            const elSteps = document.getElementById('stepsContainer');
+            const elSuccess = document.getElementById('successBox');
+            const elStep1 = document.getElementById('step1');
+            const elStep2 = document.getElementById('step2');
+            const elStep1Num = document.getElementById('step1Num');
+            const elStep2Num = document.getElementById('step2Num');
+            const btnInstall = document.getElementById('btnInstall');
+            const btnNotify = document.getElementById('btnNotify');
+
+            let deferredPrompt = null;
+            let statusData = null;
+
+            function showError(msg) {
+                elError.textContent = msg;
+                elError.classList.add('visible');
+            }
+
+            function markStepDone(stepEl, numEl, btnEl) {
+                stepEl.classList.add('completed');
+                numEl.innerHTML = '&#10003;';
+                btnEl.className = 'btn btn-done';
+                btnEl.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Terminé';
+                btnEl.disabled = true;
+            }
+
+            function showSuccess() {
+                elSteps.style.display = 'none';
+                elSuccess.classList.add('visible');
+            }
+
+            async function postStep(action) {
+                const res = await fetch('/api/v1/parents/activate-step', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: token, action: action })
+                });
+                if (!res.ok) throw new Error('Erreur serveur');
+                return await res.json();
+            }
+
+            async function checkStatus() {
+                if (!token) {
+                    elLoading.style.display = 'none';
+                    showError('Token manquant. Veuillez utiliser le lien complet envoyé par email.');
+                    return;
+                }
+
+                try {
+                    const res = await fetch('/api/v1/parents/activate-status?token=' + encodeURIComponent(token));
+                    if (!res.ok) throw new Error('Erreur serveur');
+                    statusData = await res.json();
+                } catch (e) {
+                    elLoading.style.display = 'none';
+                    showError('Impossible de vérifier le statut. Veuillez réessayer.');
+                    return;
+                }
+
+                elLoading.style.display = 'none';
+                elSteps.style.display = 'block';
+
+                if (statusData.is_fully_activated) {
+                    showSuccess();
+                    return;
+                }
+
+                if (statusData.pwa_installed) {
+                    markStepDone(elStep1, elStep1Num, btnInstall);
+                } else {
+                    btnInstall.disabled = false;
+                }
+
+                if (statusData.notifications_enabled) {
+                    markStepDone(elStep2, elStep2Num, btnNotify);
+                } else {
+                    btnNotify.disabled = statusData.pwa_installed ? false : true;
+                }
+            }
+
+            // PWA install
+            window.addEventListener('beforeinstallprompt', function (e) {
+                e.preventDefault();
+                deferredPrompt = e;
+                if (!statusData || !statusData.pwa_installed) {
+                    btnInstall.disabled = false;
+                }
+            });
+
+            btnInstall.addEventListener('click', async function () {
+                if (!deferredPrompt) {
+                    showError("L'installation n'est pas disponible. Essayez depuis Chrome ou Safari.");
+                    return;
+                }
+
+                btnInstall.disabled = true;
+                btnInstall.textContent = 'Installation...';
+
+                deferredPrompt.prompt();
+                const choice = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+
+                if (choice.outcome === 'accepted') {
+                    // Wait for appinstalled event or proceed after short delay
+                } else {
+                    btnInstall.disabled = false;
+                    btnInstall.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Installer';
+                }
+            });
+
+            window.addEventListener('appinstalled', async function () {
+                try {
+                    const result = await postStep('pwa_installed');
+                    markStepDone(elStep1, elStep1Num, btnInstall);
+                    btnNotify.disabled = false;
+                    if (result.is_fully_activated) showSuccess();
+                } catch (e) {
+                    showError("Erreur lors de l'enregistrement. Réessayez.");
+                    btnInstall.disabled = false;
+                }
+            });
+
+            // Notifications
+            btnNotify.addEventListener('click', async function () {
+                btnNotify.disabled = true;
+                btnNotify.textContent = 'Activation...';
+
+                try {
+                    const permission = await Notification.requestPermission();
+
+                    if (permission !== 'granted') {
+                        showError('Vous devez autoriser les notifications pour continuer.');
+                        btnNotify.disabled = false;
+                        btnNotify.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Activer';
+                        return;
+                    }
+
+                    // Subscribe to push
+                    const reg = await navigator.serviceWorker.ready;
+                    const vapidPublicKey = 'BEl62iUYgUivxIkv69yViEhNHQpYb7n3F8-v2V9OjYQ7p4b3q0w5e8r9t0y1u2i3o4p5a6s7d8f9g0h';
+                    const applicationServerKey = urlBase64ToUint8Array(vapidPublicKey);
+
+                    let subscription;
+                    try {
+                        subscription = await reg.pushManager.subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey: applicationServerKey
+                        });
+                    } catch (subErr) {
+                        // Proceed even if push subscribe fails
+                    }
+
+                    const result = await postStep('notifications_enabled');
+                    markStepDone(elStep2, elStep2Num, btnNotify);
+                    if (result.is_fully_activated) showSuccess();
+                } catch (e) {
+                    showError('Erreur lors de l\'activation des notifications.');
+                    btnNotify.disabled = false;
+                    btnNotify.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Activer';
+                }
+            });
+
+            function urlBase64ToUint8Array(base64String) {
+                const padding = '='.repeat((4 - base64String.length % 4) % 4);
+                const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+                const rawData = window.atob(base64);
+                const outputArray = new Uint8Array(rawData.length);
+                for (let i = 0; i < rawData.length; ++i) {
+                    outputArray[i] = rawData.charCodeAt(i);
+                }
+                return outputArray;
+            }
+
+            checkStatus();
+        })();
+    </script>
+</body>
+</html>
