@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-const API_BASE = '/smart/public/api/v1';
+const API_BASE = '/api/v1';
 
 type MagicPurpose = 'news' | 'dashboard' | 'notes' | 'absences' | 'frais' | 'emploi' | 'annonces' | 'profs' | 'paiements';
 

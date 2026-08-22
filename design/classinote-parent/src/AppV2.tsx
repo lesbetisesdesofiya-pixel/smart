@@ -14,7 +14,7 @@ import { SupportScreenV2 } from './screensV2/SupportScreenV2';
 import { ExamensScreenV2 } from './screensV2/ExamensScreenV2';
 import { NouveautesScreenV2 } from './screensV2/NouveautesScreenV2';
 
-const API_BASE = '/smart/public/api/v1';
+const API_BASE = '/api/v1';
 
 function parseMagicRoute(): { purpose: string; token: string } | null {
   const hash = window.location.hash || '';
