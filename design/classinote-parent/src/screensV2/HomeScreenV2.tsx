@@ -5,20 +5,41 @@ interface HomeScreenV2Props {
   onNavigate: (tab: string) => void;
 }
 
+interface NewItems {
+  notes: number;
+  absences: number;
+  examens: number;
+  messages: number;
+  paiements: number;
+}
+
+function getLastSeen(type: string): number {
+  try { return parseInt(localStorage.getItem(`classinote_last_seen_${type}`) || '0'); } catch { return 0; }
+}
+function setLastSeen(type: string) {
+  try { localStorage.setItem(`classinote_last_seen_${type}`, Date.now().toString()); } catch {}
+}
+
 export const HomeScreenV2: React.FC<HomeScreenV2Props> = ({ onNavigate }) => {
   const [parentName, setParentName] = useState('');
   const [children, setChildren] = useState<any[]>([]);
   const [activeChildId, setActiveChildId] = useState('');
   const [latestGrade, setLatestGrade] = useState<any>(null);
   const [latestNotice, setLatestNotice] = useState<any>(null);
+  const [absenceCount, setAbsenceCount] = useState(0);
+  const [newItems, setNewItems] = useState<NewItems>({ notes: 0, absences: 0, examens: 0, messages: 0, paiements: 0 });
   const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
     try {
-      const [resEnfants, resNotes, resRemarques] = await Promise.all([
+      const [resEnfants, resNotes, resRemarques, resAbsences, resExamens, resMessages, resPaiements] = await Promise.all([
         apiFetch('/parent/enfants').catch(() => null),
         apiFetch('/parent/notes').catch(() => null),
         apiFetch('/parent/remarques').catch(() => null),
+        apiFetch('/parent/absences').catch(() => null),
+        apiFetch('/parent/evaluations').catch(() => null),
+        apiFetch('/parent/messages').catch(() => null),
+        apiFetch('/parent/paiements').catch(() => null),
       ]);
 
       if (resEnfants?.ok) {
@@ -38,6 +59,11 @@ export const HomeScreenV2: React.FC<HomeScreenV2Props> = ({ onNavigate }) => {
         }
       }
 
+      const now = Date.now();
+      const twoDaysAgo = now - 172800000;
+      const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000;
+      const newCounts: NewItems = { notes: 0, absences: 0, examens: 0, messages: 0, paiements: 0 };
+
       if (resNotes?.ok) {
         const notes = await resNotes.json();
         if (Array.isArray(notes) && notes.length > 0) {
@@ -48,6 +74,11 @@ export const HomeScreenV2: React.FC<HomeScreenV2Props> = ({ onNavigate }) => {
             score: n.note ?? 0,
             max: n.evaluation?.note_sur || 20,
           });
+          const lastSeen = getLastSeen('notes');
+          newCounts.notes = notes.filter((nt: any) => {
+            const d = nt.created_at ? new Date(nt.created_at).getTime() : 0;
+            return d > lastSeen && d >= twoDaysAgo;
+          }).length;
         }
       }
 
@@ -61,12 +92,69 @@ export const HomeScreenV2: React.FC<HomeScreenV2Props> = ({ onNavigate }) => {
           });
         }
       }
+
+      if (resAbsences?.ok) {
+        const absences = await resAbsences.json();
+        if (Array.isArray(absences)) {
+          const recent = absences.filter((a: any) => {
+            const d = a.date ? new Date(a.date).getTime() : 0;
+            return d >= thirtyDaysAgo && !a.est_present;
+          });
+          setAbsenceCount(recent.length);
+          const lastSeen = getLastSeen('absences');
+          newCounts.absences = recent.filter((a: any) => {
+            const d = a.date ? new Date(a.date).getTime() : 0;
+            return d > lastSeen;
+          }).length;
+        }
+      }
+
+      if (resExamens?.ok) {
+        const examens = await resExamens.json();
+        if (Array.isArray(examens)) {
+          const lastSeen = getLastSeen('examens');
+          newCounts.examens = examens.filter((e: any) => {
+            const d = e.date ? new Date(e.date).getTime() : 0;
+            return d > lastSeen && d >= now;
+          }).length;
+        }
+      }
+
+      if (resMessages?.ok) {
+        const messages = await resMessages.json();
+        if (Array.isArray(messages)) {
+          const lastSeen = getLastSeen('messages');
+          newCounts.messages = messages.filter((m: any) => {
+            const d = m.created_at ? new Date(m.created_at).getTime() : 0;
+            return d > lastSeen && !m.lu;
+          }).length;
+        }
+      }
+
+      if (resPaiements?.ok) {
+        const paiements = await resPaiements.json();
+        if (Array.isArray(paiements)) {
+          const lastSeen = getLastSeen('paiements');
+          newCounts.paiements = paiements.filter((p: any) => {
+            const d = p.created_at ? new Date(p.created_at).getTime() : 0;
+            return d > lastSeen && d >= twoDaysAgo;
+          }).length;
+        }
+      }
+
+      setNewItems(newCounts);
     } catch {} finally {
       setLoading(false);
     }
   }, [activeChildId]);
 
   useEffect(() => { loadData(); }, [loadData]);
+
+  const handleCardClick = (type: string, navigateTo: string) => {
+    setLastSeen(type);
+    setNewItems(prev => ({ ...prev, [type]: 0 }));
+    onNavigate(navigateTo);
+  };
 
   const activeChild = children.find(c => c.id === activeChildId) || children[0];
 
@@ -137,12 +225,17 @@ export const HomeScreenV2: React.FC<HomeScreenV2Props> = ({ onNavigate }) => {
       <div className="space-y-4">
         {/* Notes card */}
         <button
-          onClick={() => onNavigate('notes')}
+          onClick={() => handleCardClick('notes', 'notes')}
           className="w-full bg-white rounded-3xl p-5 border border-gray-100 text-left hover:shadow-lg transition-all active:scale-[0.98]"
         >
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-blue-500 flex items-center justify-center shrink-0">
+            <div className="relative w-14 h-14 rounded-2xl bg-blue-500 flex items-center justify-center shrink-0">
               <span className="material-symbols-outlined text-white text-2xl">grade</span>
+              {newItems.notes > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1.5 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">
+                  {newItems.notes}
+                </span>
+              )}
             </div>
             <div className="flex-1">
               <p className="text-lg font-bold text-gray-900">Notes</p>
@@ -159,16 +252,45 @@ export const HomeScreenV2: React.FC<HomeScreenV2Props> = ({ onNavigate }) => {
 
         {/* Examens card */}
         <button
-          onClick={() => onNavigate('examens')}
+          onClick={() => handleCardClick('examens', 'examens')}
           className="w-full bg-white rounded-3xl p-5 border border-gray-100 text-left hover:shadow-lg transition-all active:scale-[0.98]"
         >
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-rose-500 flex items-center justify-center shrink-0">
+            <div className="relative w-14 h-14 rounded-2xl bg-rose-500 flex items-center justify-center shrink-0">
               <span className="material-symbols-outlined text-white text-2xl">event_note</span>
+              {newItems.examens > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1.5 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">
+                  {newItems.examens}
+                </span>
+              )}
             </div>
             <div className="flex-1">
               <p className="text-lg font-bold text-gray-900">Examens</p>
               <p className="text-sm text-gray-400 mt-0.5">Evaluations a venir</p>
+            </div>
+            <span className="material-symbols-outlined text-gray-300 text-2xl">chevron_right</span>
+          </div>
+        </button>
+
+        {/* Absences card */}
+        <button
+          onClick={() => handleCardClick('absences', 'nouveautes')}
+          className="w-full bg-white rounded-3xl p-5 border border-gray-100 text-left hover:shadow-lg transition-all active:scale-[0.98]"
+        >
+          <div className="flex items-center gap-4">
+            <div className="relative w-14 h-14 rounded-2xl bg-orange-500 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-white text-2xl">event_busy</span>
+              {newItems.absences > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1.5 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">
+                  {newItems.absences}
+                </span>
+              )}
+            </div>
+            <div className="flex-1">
+              <p className="text-lg font-bold text-gray-900">Absences</p>
+              <p className="text-sm text-gray-400 mt-0.5">
+                {absenceCount > 0 ? `${absenceCount} absence${absenceCount > 1 ? 's' : ''} ce mois` : 'Aucune absence ce mois'}
+              </p>
             </div>
             <span className="material-symbols-outlined text-gray-300 text-2xl">chevron_right</span>
           </div>

@@ -13,6 +13,7 @@ import { ScheduleScreenV2 } from './screensV2/ScheduleScreenV2';
 import { SupportScreenV2 } from './screensV2/SupportScreenV2';
 import { ExamensScreenV2 } from './screensV2/ExamensScreenV2';
 import { NouveautesScreenV2 } from './screensV2/NouveautesScreenV2';
+import { ActivateScreenV2 } from './screensV2/ActivateScreenV2';
 
 const API_BASE = '/api/v1';
 
@@ -226,6 +227,9 @@ export default function AppV2() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     try { return !!getUser(); } catch { return false; }
   });
+  const [isActivated, setIsActivated] = useState(() => {
+    try { return localStorage.getItem('classinote_parent_activated') === '1'; } catch { return false; }
+  });
   const [tab, setTab] = useState(() => {
     try {
       const t = sessionStorage.getItem('classinote_magic_tab');
@@ -246,7 +250,12 @@ export default function AppV2() {
     return <LandingScreen />;
   }
 
-  // Logged in: render dashboard with error boundary
+  // Logged in but not activated: show activation flow
+  if (!isActivated) {
+    return <ActivateScreenV2 onComplete={() => setIsActivated(true)} />;
+  }
+
+  // Logged in and activated: render dashboard
   return (
     <Dashboard
       tab={tab}
