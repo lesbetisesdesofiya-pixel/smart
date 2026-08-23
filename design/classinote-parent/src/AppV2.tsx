@@ -47,10 +47,7 @@ function MagicConsumeScreen({ purpose, token }: { purpose: string; token: string
           return;
         }
 
-        if (json.auth) {
-          localStorage.setItem('classinote_parent_user', JSON.stringify({ type: 'parent', id: json.id }));
-          sessionStorage.setItem('classinote_magic_dashboard', '1');
-        }
+        // Session is set by the server via HttpOnly cookie
         if (json.tab) {
           sessionStorage.setItem('classinote_magic_tab', json.tab);
         }
@@ -224,9 +221,7 @@ function LandingScreen() {
 
 export default function AppV2() {
   const magicRoute = parseMagicRoute();
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    try { return !!getUser(); } catch { return false; }
-  });
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isActivated, setIsActivated] = useState(() => {
     try { return localStorage.getItem('classinote_parent_activated') === '1'; } catch { return false; }
   });
@@ -239,6 +234,19 @@ export default function AppV2() {
   });
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifCount, setNotifCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  // Check auth on mount
+  useEffect(() => {
+    if (magicRoute) return;
+    
+    getUser().then(user => {
+      if (user) {
+        setIsLoggedIn(true);
+      }
+      setLoading(false);
+    });
+  }, [magicRoute]);
 
   const handleLogout = useCallback(() => {
     try { clearAuthData(); } catch {}
@@ -249,6 +257,15 @@ export default function AppV2() {
   // Magic link: consume token and reload
   if (magicRoute) {
     return <MagicConsumeScreen purpose={magicRoute.purpose} token={magicRoute.token} />;
+  }
+
+  // Loading
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f5f6fa] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
   // Not logged in: show landing

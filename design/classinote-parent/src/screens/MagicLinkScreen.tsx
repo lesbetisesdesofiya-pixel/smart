@@ -32,11 +32,8 @@ export const MagicLinkScreen: React.FC<MagicLinkScreenProps> = ({ purpose, token
           return;
         }
 
-        if (json.auth) {
-          localStorage.setItem('classinote_parent_user', JSON.stringify({ type: 'parent', id: json.id }));
-          sessionStorage.setItem('classinote_magic_dashboard', '1');
-        }
-
+        // Session is set by the server via HttpOnly cookie
+        // Store tab info in sessionStorage for the app to use
         if (json.tab) {
           sessionStorage.setItem('classinote_magic_tab', json.tab);
         }
