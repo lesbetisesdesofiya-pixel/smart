@@ -51,6 +51,13 @@ Route::prefix('v1')->group(function () {
     Route::post('auth/admin/magic-link', [AuthController::class, 'adminMagicLink'])
         ->middleware('throttle:10,1');
 
+    // Magic link consume
+    Route::post('magic/consume', [MagicLinkController::class, 'consume']);
+
+    // Auth check endpoints
+    Route::get('auth/prof/check', [\App\Http\Controllers\Api\AuthCheckController::class, 'checkProf']);
+    Route::get('auth/parent/check', [\App\Http\Controllers\Api\AuthCheckController::class, 'checkParent']);
+
     // Device-based auth for prof/parent
     Route::post('auth/device/verify', [DeviceAuthController::class, 'verify'])
         ->middleware('throttle:10,1');

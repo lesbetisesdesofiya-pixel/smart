@@ -1,39 +1,48 @@
 /**
  * ClassiNote Prof – API Utility
- * Connecte au backend Laravel (HttpOnly cookie auth)
+ * Session-based auth with HttpOnly cookies
  */
 
 const API_BASE = '/api/v1';
 
 let lastActivityTime = Date.now();
+let cachedUser: any = null;
 
-export function getUser(): any {
-  const user = localStorage.getItem('classinote_prof_user');
-  return user ? JSON.parse(user) : null;
+export async function getUser(): Promise<any> {
+  if (cachedUser) return cachedUser;
+  
+  try {
+    const res = await fetch(`${API_BASE}/auth/prof/check`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Accept': 'application/json' },
+    });
+    
+    if (res.ok) {
+      const data = await res.json();
+      if (data.authenticated) {
+        cachedUser = { type: 'prof', id: data.id, nom_complet: data.nom_complet };
+        return cachedUser;
+      }
+    }
+  } catch {}
+  
+  return null;
 }
 
 export function setAuthData(user: any): void {
-  localStorage.setItem('classinote_prof_user', JSON.stringify(user));
+  cachedUser = user;
 }
 
 export function clearAuthData(): void {
-  localStorage.removeItem('classinote_prof_user');
+  cachedUser = null;
 }
 
 export function recordActivity(): void {
   lastActivityTime = Date.now();
-  localStorage.setItem('classinote_prof_last_activity', String(Date.now()));
 }
 
 export function getLastActivityTime(): number {
-  const stored = localStorage.getItem('classinote_prof_last_activity');
-  if (stored) {
-    const parsed = parseInt(stored, 10);
-    if (!isNaN(parsed)) {
-      lastActivityTime = parsed;
-      return parsed;
-    }
-  }
   return lastActivityTime;
 }
 

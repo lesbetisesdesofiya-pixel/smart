@@ -42,6 +42,14 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'prof' => [
+            'driver' => 'session',
+            'provider' => 'profs',
+        ],
+        'parent' => [
+            'driver' => 'session',
+            'provider' => 'parents',
+        ],
         'sanctum' => [
             'driver' => 'sanctum',
             'provider' => null,
@@ -69,6 +77,14 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', User::class),
+        ],
+        'profs' => [
+            'driver' => 'eloquent',
+            'model' => \App\Models\Prof::class,
+        ],
+        'parents' => [
+            'driver' => 'eloquent',
+            'model' => \App\Models\ParentModel::class,
         ],
 
         // 'users' => [

@@ -68,9 +68,9 @@ interface EleveClasse {
 }
 
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => !!getUser());
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('dashboard');
-  const [showPinModal, setShowPinModal] = useState(() => !!getUser());
+  const [showPinModal, setShowPinModal] = useState(false);
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState<string | null>(null);
   const [isPinLoading, setIsPinLoading] = useState(false);
@@ -102,6 +102,19 @@ export default function App() {
     }
     return null;
   });
+
+  // Check auth on mount
+  useEffect(() => {
+    if (magicLink) return;
+    
+    getUser().then(user => {
+      if (user) {
+        setIsLoggedIn(true);
+        setShowPinModal(true);
+      }
+      setLoading(false);
+    });
+  }, [magicLink]);
 
   const loadDashboardData = useCallback(async () => {
     try {

@@ -30,10 +30,8 @@ export const MagicLinkScreen: React.FC<MagicLinkScreenProps> = ({ purpose, token
           return;
         }
 
-        if (json.auth) {
-          localStorage.setItem('classinote_prof_user', JSON.stringify({ type: 'prof', id: json.id }));
-        }
-
+        // Session is set by the server via HttpOnly cookie
+        // Just reload the page
         const appBase = window.location.pathname.endsWith('/')
           ? window.location.pathname
           : window.location.pathname + '/';

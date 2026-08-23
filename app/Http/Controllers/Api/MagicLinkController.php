@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ParentModel;
+use App\Models\Prof;
 use App\Services\MagicLinkService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 
 class MagicLinkController extends Controller
 {
@@ -37,17 +40,16 @@ class MagicLinkController extends Controller
                 return response()->json(['message' => 'Professeur introuvable.'], 404);
             }
 
-            $token = $prof->createToken('prof-magic-token')->plainTextToken;
-            $secure = env('SESSION_SECURE_COOKIE', true);
+            // Login with session (remember me)
+            Auth::guard('prof')->login($prof, true);
+            $request->session()->regenerate();
 
             return response()->json([
                 'success' => true,
                 'type' => 'prof',
                 'id' => $prof->id,
                 'auth' => true,
-            ])->withCookie(
-                cookie('classinote_token', $token, 60 * 24, '/', null, $secure, true, false, 'lax')
-            );
+            ]);
         }
 
         // Parent magic link
@@ -57,9 +59,11 @@ class MagicLinkController extends Controller
             return response()->json(['message' => 'Parent introuvable.'], 404);
         }
 
-        $token = $parent->createToken('parent-magic-token')->plainTextToken;
+        // Login with session (remember me)
+        Auth::guard('parent')->login($parent, true);
+        $request->session()->regenerate();
+
         $tab = $magicLinks->getTabForPurpose($request->purpose);
-        $secure = env('SESSION_SECURE_COOKIE', true);
 
         return response()->json([
             'success' => true,
@@ -67,8 +71,6 @@ class MagicLinkController extends Controller
             'id' => $parent->id,
             'auth' => true,
             'tab' => $tab,
-        ])->withCookie(
-            cookie('classinote_token', $token, 60 * 24, '/', null, $secure, true, false, 'lax')
-        );
+        ]);
     }
 }
