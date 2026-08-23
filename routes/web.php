@@ -13,7 +13,7 @@ Route::get('/app/admin/{any?}', function ($any = null) {
 
 // Magic link routes
 Route::get('/magic/prof/{purpose?}', function ($purpose = null) {
-    return response()->file(public_path('app/prof/index.html'));
+    return response()->file(public_path('app/profV2/index.html'));
 })->where('purpose', '.*');
 
 Route::get('/magic/parent/{purpose?}', function ($purpose = null) {
