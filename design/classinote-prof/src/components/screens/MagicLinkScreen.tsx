@@ -5,10 +5,9 @@ const API_BASE = '/api/v1';
 interface MagicLinkScreenProps {
   purpose: string;
   token: string;
-  onAuthSuccess: () => void;
 }
 
-export const MagicLinkScreen: React.FC<MagicLinkScreenProps> = ({ purpose, token, onAuthSuccess }) => {
+export const MagicLinkScreen: React.FC<MagicLinkScreenProps> = ({ purpose, token }) => {
   const [state, setState] = useState<'loading' | 'error'>('loading');
   const [error, setError] = useState('');
 
@@ -35,7 +34,10 @@ export const MagicLinkScreen: React.FC<MagicLinkScreenProps> = ({ purpose, token
           localStorage.setItem('classinote_prof_user', JSON.stringify({ type: 'prof', id: json.id }));
         }
 
-        onAuthSuccess();
+        const appBase = window.location.pathname.endsWith('/')
+          ? window.location.pathname
+          : window.location.pathname + '/';
+        window.location.replace(appBase);
       } catch {
         if (!cancelled) {
           setError('Une erreur est survenue. Veuillez réessayer.');
@@ -45,7 +47,7 @@ export const MagicLinkScreen: React.FC<MagicLinkScreenProps> = ({ purpose, token
     })();
 
     return () => { cancelled = true; };
-  }, [token, purpose, onAuthSuccess]);
+  }, [token, purpose]);
 
   if (state === 'error') {
     return (

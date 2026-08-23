@@ -403,12 +403,6 @@ export default function App() {
       <MagicLinkScreen
         purpose={magicLink.purpose}
         token={magicLink.token}
-        onAuthSuccess={() => {
-          setMagicLink(null);
-          setIsLoggedIn(true);
-          setLoading(true);
-          window.location.hash = '';
-        }}
       />
     );
   }
