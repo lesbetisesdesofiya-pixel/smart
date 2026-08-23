@@ -2694,13 +2694,9 @@ PROMPT;
 
  $conv->setState('awaiting_prof_action', ['prof_id' => $prof->id, 'role' => 'prof']);
 
- $this->sendText($conv, " *Tableau de bord*\n\nCliquez ci-dessous pour accéder À votre tableau de bord.\n\n0 Ce lien expire dans 10 minutes.", [
- ['title' => '"™ Menu prof', 'payload' => 'menu'],
- ['title' => '"š Changer classe', 'payload' => 'menu'],
- ['title' => '' Mode Parent', 'payload' => 'role_parent'],
- ], [
+ $this->sendText($conv, " *Tableau de bord*\n\nCliquez ci-dessous pour accéder À votre tableau de bord.\n\n0 Ce lien expire dans 10 minutes.", [], [
  'type' => 'cta_url',
- 'body' => ['text' => " Tableau de bord prof"],
+ 'body' => ['text' => " Tableau de bord prof"],
  'action' => [
  'name' => 'cta_url',
  'parameters' => [
@@ -2738,13 +2734,9 @@ PROMPT;
 
  $conv->setState('awaiting_prof_action', ['prof_id' => $prof->id, 'classe_id' => $classeId, 'role' => 'prof']);
 
- $this->sendText($conv, "0 *Marquer les absences* — {$classe?->libelle}\n\nCliquez ci-dessous pour marquer les absences.\n\n0 Ce lien expire dans 10 minutes.", [
- ['title' => '"™ Menu prof', 'payload' => 'menu'],
- ['title' => '"š Changer classe', 'payload' => 'menu'],
- ['title' => '' Mode Parent', 'payload' => 'role_parent'],
- ], [
+ $this->sendText($conv, "0 *Marquer les absences* — {$classe?->libelle}\n\nCliquez ci-dessous pour marquer les absences.\n\n0 Ce lien expire dans 10 minutes.", [], [
  'type' => 'cta_url',
- 'body' => ['text' => "0 Absences — {$classe?->libelle}"],
+ 'body' => ['text' => "0 Absences — {$classe?->libelle}"],
  'action' => [
  'name' => 'cta_url',
  'parameters' => [

@@ -2760,21 +2760,17 @@ Que souhaitez-vous faire ?";
 
         $conv->setState('awaiting_prof_action', ['prof_id' => $prof->id, 'role' => 'prof']);
 
-        $this->sendText($conv, "🏠 *Tableau de bord*\n\nCliquez ci-dessous pour accéder à votre tableau de bord.\n\n⏰ Ce lien expire dans 10 minutes.", [
-  ['title' => '🔄 Menu prof', 'payload' => 'menu'],
-  ['title' => '🏫 Changer classe', 'payload' => 'menu'],
-  ['title' => '👨 Mode Parent', 'payload' => 'role_parent'],
-  ], [
-  'type' => 'cta_url',
-  'body' => ['text' => "🏠 Tableau de bord prof"],
-  'action' => [
-  'name' => 'cta_url',
-  'parameters' => [
-  'display_text' => 'Ouvrir le dashboard',
-  'url' => $url,
-  ],
-  ],
-  ]);
+        $this->sendText($conv, "🏠 *Tableau de bord*\n\nCliquez ci-dessous pour accéder à votre tableau de bord.\n\n⏰ Ce lien expire dans 10 minutes.", [], [
+   'type' => 'cta_url',
+   'body' => ['text' => "🏠 Tableau de bord prof"],
+   'action' => [
+   'name' => 'cta_url',
+   'parameters' => [
+   'display_text' => 'Ouvrir le dashboard',
+   'url' => $url,
+   ],
+   ],
+   ]);
  }
 
  private function sendProfAbsencesLink(WhatsAppConversation $conv, \App\Models\Prof $prof): void
@@ -2804,11 +2800,7 @@ Que souhaitez-vous faire ?";
 
  $conv->setState('awaiting_prof_action', ['prof_id' => $prof->id, 'classe_id' => $classeId, 'role' => 'prof']);
 
- $this->sendText($conv, "⏰ *Marquer les absences* — {$classe?->libelle}\n\nCliquez ci-dessous pour marquer les absences.\n\n⏰ Ce lien expire dans 10 minutes.", [
- ['title' => '🔄 Menu prof', 'payload' => 'menu'],
- ['title' => '🏫 Changer classe', 'payload' => 'menu'],
- ['title' => '👨 Mode Parent', 'payload' => 'role_parent'],
- ], [
+ $this->sendText($conv, "⏰ *Marquer les absences* — {$classe?->libelle}\n\nCliquez ci-dessous pour marquer les absences.\n\n⏰ Ce lien expire dans 10 minutes.", [], [
  'type' => 'cta_url',
  'body' => ['text' => "⏰ Absences — {$classe?->libelle}"],
  'action' => [
