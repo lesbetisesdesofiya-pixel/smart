@@ -3,11 +3,10 @@ import React, { useEffect, useState } from 'react';
 const API_BASE = '/api/v1';
 
 interface MagicLinkScreenProps {
-  purpose: string;
   token: string;
 }
 
-export const MagicLinkScreen: React.FC<MagicLinkScreenProps> = ({ purpose, token }) => {
+export const MagicLinkScreen: React.FC<MagicLinkScreenProps> = ({ token }) => {
   const [state, setState] = useState<'loading' | 'error'>('loading');
   const [error, setError] = useState('');
 
@@ -18,8 +17,9 @@ export const MagicLinkScreen: React.FC<MagicLinkScreenProps> = ({ purpose, token
       try {
         const res = await fetch(`${API_BASE}/magic/consume`, {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({ token, purpose }),
+          body: JSON.stringify({ token }),
         });
         const json = await res.json();
         if (cancelled) return;
@@ -30,12 +30,8 @@ export const MagicLinkScreen: React.FC<MagicLinkScreenProps> = ({ purpose, token
           return;
         }
 
-        // Session is set by the server via HttpOnly cookie
-        // Just reload the page
-        const appBase = window.location.pathname.endsWith('/')
-          ? window.location.pathname
-          : window.location.pathname + '/';
-        window.location.replace(appBase);
+        // Remove token from URL and reload
+        window.location.replace(window.location.pathname);
       } catch {
         if (!cancelled) {
           setError('Une erreur est survenue. Veuillez réessayer.');
@@ -45,7 +41,7 @@ export const MagicLinkScreen: React.FC<MagicLinkScreenProps> = ({ purpose, token
     })();
 
     return () => { cancelled = true; };
-  }, [token, purpose]);
+  }, [token]);
 
   if (state === 'error') {
     return (

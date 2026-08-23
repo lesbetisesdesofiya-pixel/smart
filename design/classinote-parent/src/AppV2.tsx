@@ -17,17 +17,16 @@ import { ActivateScreenV2 } from './screensV2/ActivateScreenV2';
 
 const API_BASE = '/api/v1';
 
-function parseMagicRoute(): { purpose: string; token: string } | null {
-  const hash = window.location.hash || '';
-  const match = hash.match(/^#\/magic\/(\w+)\??/i);
-  if (!match) return null;
-  const params = new URLSearchParams(hash.split('?')[1] || '');
-  const token = params.get('token') || '';
-  if (!token || !/^[a-f0-9]{64}$/i.test(token)) return null;
-  return { purpose: match[1].toLowerCase(), token };
+function parseMagicToken(): string | null {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('t');
+  if (token && /^[a-f0-9]{64}$/i.test(token)) {
+    return token;
+  }
+  return null;
 }
 
-function MagicConsumeScreen({ purpose, token }: { purpose: string; token: string }) {
+function MagicConsumeScreen({ token }: { token: string }) {
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -36,8 +35,9 @@ function MagicConsumeScreen({ purpose, token }: { purpose: string; token: string
       try {
         const res = await fetch(`${API_BASE}/magic/consume`, {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({ token, purpose }),
+          body: JSON.stringify({ token }),
         });
         const json = await res.json();
         if (cancelled) return;
@@ -47,14 +47,8 @@ function MagicConsumeScreen({ purpose, token }: { purpose: string; token: string
           return;
         }
 
-        // Session is set by the server via HttpOnly cookie
-        if (json.tab) {
-          sessionStorage.setItem('classinote_magic_tab', json.tab);
-        }
-
-        // Clear hash and reload
-        window.location.hash = '';
-        window.location.reload();
+        // Remove token from URL and reload
+        window.location.replace(window.location.pathname);
       } catch {
         if (!cancelled) setError('Erreur. Reessayez.');
       }
@@ -220,25 +214,19 @@ function LandingScreen() {
 }
 
 export default function AppV2() {
-  const magicRoute = parseMagicRoute();
+  const magicToken = parseMagicToken();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isActivated, setIsActivated] = useState(() => {
     try { return localStorage.getItem('classinote_parent_activated') === '1'; } catch { return false; }
   });
-  const [tab, setTab] = useState(() => {
-    try {
-      const t = sessionStorage.getItem('classinote_magic_tab');
-      if (t) { sessionStorage.removeItem('classinote_magic_tab'); return t; }
-    } catch {}
-    return 'accueil';
-  });
+  const [tab, setTab] = useState('accueil');
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifCount, setNotifCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   // Check auth on mount
   useEffect(() => {
-    if (magicRoute) return;
+    if (magicToken) return;
     
     getUser().then(user => {
       if (user) {
@@ -246,7 +234,7 @@ export default function AppV2() {
       }
       setLoading(false);
     });
-  }, [magicRoute]);
+  }, [magicToken]);
 
   const handleLogout = useCallback(() => {
     try { clearAuthData(); } catch {}
@@ -255,8 +243,8 @@ export default function AppV2() {
   }, []);
 
   // Magic link: consume token and reload
-  if (magicRoute) {
-    return <MagicConsumeScreen purpose={magicRoute.purpose} token={magicRoute.token} />;
+  if (magicToken) {
+    return <MagicConsumeScreen token={magicToken} />;
   }
 
   // Loading

@@ -41,6 +41,7 @@ class MagicLinkService
         MagicLink::create([
             'token_hash' => hash('sha256', $token),
             'purpose' => $purpose,
+            'user_type' => 'parent',
             'parent_id' => $parent->id,
             'eleve_id' => $eleveId,
             'expires_at' => now()->addMinutes(self::TTL_MINUTES),
@@ -70,7 +71,7 @@ class MagicLinkService
     {
         $token = $this->create($parent, $purpose, $eleveId);
 
-        return $this->baseUrl() . "/app/parentV2/#/magic/{$purpose}?token={$token}";
+        return $this->baseUrl() . "/magic?t={$token}";
     }
 
     public function getTabForPurpose(string $purpose): string

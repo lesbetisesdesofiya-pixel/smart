@@ -10,6 +10,7 @@ class MagicLink extends Model
     protected $fillable = [
         'token_hash',
         'purpose',
+        'user_type',
         'parent_id',
         'prof_id',
         'eleve_id',

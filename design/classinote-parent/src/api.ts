@@ -12,7 +12,7 @@ export async function getUser(): Promise<any> {
   if (cachedUser) return cachedUser;
   
   try {
-    const res = await fetch(`${API_BASE}/auth/parent/check`, {
+    const res = await fetch(`${API_BASE}/auth/me`, {
       method: 'GET',
       credentials: 'include',
       headers: { 'Accept': 'application/json' },
@@ -20,8 +20,8 @@ export async function getUser(): Promise<any> {
     
     if (res.ok) {
       const data = await res.json();
-      if (data.authenticated) {
-        cachedUser = { type: 'parent', id: data.id };
+      if (data.authenticated && data.type === 'parent') {
+        cachedUser = { type: 'parent', id: data.user.id };
         return cachedUser;
       }
     }

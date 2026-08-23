@@ -11,6 +11,11 @@ Route::get('/app/admin/{any?}', function ($any = null) {
     return response()->file(public_path('app/admin/index.html'));
 })->where('any', '.*');
 
+// Magic link route - serves prof app
+Route::get('/magic', function () {
+    return response()->file(public_path('app/prof/index.html'));
+});
+
 // Prof App - SPA fallback
 Route::get('/app/prof/{any?}', function ($any = null) {
     return response()->file(public_path('app/prof/index.html'));
