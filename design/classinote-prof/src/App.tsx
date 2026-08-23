@@ -70,10 +70,6 @@ interface EleveClasse {
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('dashboard');
-  const [showPinModal, setShowPinModal] = useState(false);
-  const [pinInput, setPinInput] = useState('');
-  const [pinError, setPinError] = useState<string | null>(null);
-  const [isPinLoading, setIsPinLoading] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isChangePinOpen, setIsChangePinOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -180,22 +176,11 @@ export default function App() {
       }
     });
 
-    // Periodic check every 30s if idle > 5min → show PIN
-    const idleCheck = setInterval(() => {
-      const elapsed = Date.now() - getLastActivityTime();
-      if (elapsed >= IDLE_TIMEOUT) {
-        setShowPinModal(true);
-      }
-    }, CHECK_INTERVAL);
-
     // Activity listeners – just record activity
     const handleActivity = () => { recordActivity(); };
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        const elapsed = Date.now() - getLastActivityTime();
-        if (elapsed >= IDLE_TIMEOUT) {
-          setShowPinModal(true);
-        }
+        recordActivity();
       }
     };
 
@@ -206,7 +191,6 @@ export default function App() {
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      clearInterval(idleCheck);
       window.removeEventListener('mousemove', handleActivity);
       window.removeEventListener('keydown', handleActivity);
       window.removeEventListener('click', handleActivity);
@@ -214,28 +198,6 @@ export default function App() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [isLoggedIn, currentScreen]);
-
-  const handlePinVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (pinInput.length !== 4) return;
-    setIsPinLoading(true);
-    setPinError(null);
-    try {
-      const data = await unlock(pinInput);
-      if (data.success) {
-        setShowPinModal(false);
-        setPinInput('');
-        recordActivity();
-        loadDashboardData();
-      } else {
-        setPinError(data.message || 'PIN incorrect');
-      }
-    } catch {
-      setPinError('Erreur de vérification');
-    } finally {
-      setIsPinLoading(false);
-    }
-  };
 
   const handleNavigate = (screen: ScreenType) => {
     setCurrentScreen(screen);
