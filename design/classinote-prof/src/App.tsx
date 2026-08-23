@@ -110,7 +110,6 @@ export default function App() {
     getUser().then(user => {
       if (user) {
         setIsLoggedIn(true);
-        setShowPinModal(true);
       }
       setLoading(false);
     });
@@ -578,60 +577,6 @@ export default function App() {
         isOpen={isChangePinOpen}
         onClose={() => setIsChangePinOpen(false)}
       />
-
-      {showPinModal && (
-        <div className="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center p-6">
-          <div className="w-full max-w-sm">
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <span className="material-symbols-outlined text-3xl">lock</span>
-              </div>
-              <h2 className="text-xl font-bold text-slate-900">Session sécurisée</h2>
-              <p className="text-xs text-slate-500 mt-2">Saisissez votre PIN à 4 chiffres</p>
-            </div>
-
-            <div className="bg-white rounded-[24px] p-6 shadow-xl border border-slate-200">
-              <form onSubmit={handlePinVerify} className="space-y-4">
-                <input
-                  type="password"
-                  value={pinInput}
-                  onChange={(e) => setPinInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                  placeholder="• • • •"
-                  maxLength={4}
-                  autoFocus
-                  className="w-full px-4 py-4 text-center text-3xl font-mono font-bold tracking-[0.5em] bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all"
-                />
-
-                {pinError && (
-                  <p className="text-xs text-red-600 text-center font-medium bg-red-50 p-2 rounded-xl border border-red-200">{pinError}</p>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={isPinLoading || pinInput.length !== 4}
-                  className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-2xl flex items-center justify-center gap-2 shadow-lg disabled:opacity-40 cursor-pointer transition-all"
-                >
-                  {isPinLoading ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <span className="material-symbols-outlined text-lg">lock_open</span>
-                      <span>Déverrouiller</span>
-                    </>
-                  )}
-                </button>
-              </form>
-            </div>
-
-            <button
-              onClick={handleLogout}
-              className="w-full mt-4 py-3 text-slate-400 hover:text-slate-600 font-medium text-xs rounded-xl transition-colors cursor-pointer"
-            >
-              Se déconnecter
-            </button>
-          </div>
-        </div>
-      )}
 
       {showSchoolModal && (
         <div className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
