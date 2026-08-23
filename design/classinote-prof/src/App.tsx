@@ -20,6 +20,7 @@ import { CreateAssessmentScreen } from './components/screens/CreateAssessmentScr
 import { InterrogationScreen } from './components/screens/InterrogationScreen';
 import { PresencesScreen } from './components/screens/PresencesScreen';
 import { MessagingScreen } from './components/screens/MessagingScreen';
+import { MagicLinkScreen } from './components/screens/MagicLinkScreen';
 
 interface ProfData {
   id: number;
@@ -91,6 +92,18 @@ export default function App() {
   const [addSchoolCode, setAddSchoolCode] = useState('');
   const [addSchoolError, setAddSchoolError] = useState<string | null>(null);
   const [addSchoolLoading, setAddSchoolLoading] = useState(false);
+
+  // Magic link detection
+  const [magicLink, setMagicLink] = useState<{ purpose: string; token: string } | null>(null);
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    const match = hash.match(/#\/magic\/([^?]+)\?token=(.+)/);
+    if (match) {
+      const [, purpose, token] = match;
+      setMagicLink({ purpose, token });
+    }
+  }, []);
 
   const loadDashboardData = useCallback(async () => {
     try {
@@ -233,7 +246,7 @@ export default function App() {
   const handleLoadClasseStudents = async (classeId: number) => {
     console.log('[DEBUG] handleLoadClasseStudents called with classeId:', classeId);
     try {
-      const res = await fetch(`/smart/public/api/v1/teacher/classes/${classeId}/details`, {
+      const res = await fetch(`/api/v1/teacher/classes/${classeId}/details`, {
         credentials: 'include',
         headers: { Accept: 'application/json' },
       });
@@ -386,6 +399,21 @@ export default function App() {
       setTimeout(() => setTestNotifMessage(null), 5000);
     }
   };
+
+  if (magicLink) {
+    return (
+      <MagicLinkScreen
+        purpose={magicLink.purpose}
+        token={magicLink.token}
+        onAuthSuccess={() => {
+          setMagicLink(null);
+          setIsLoggedIn(true);
+          setLoading(true);
+          window.location.hash = '';
+        }}
+      />
+    );
+  }
 
   if (!isLoggedIn) {
     return <LoginScreen onLoginSuccess={() => { setIsLoggedIn(true); setLoading(true); }} />;

@@ -2685,6 +2685,7 @@ PROMPT;
  'token_hash' => hash('sha256', $token),
  'purpose' => 'prof_dashboard',
  'parent_id' => null,
+ 'prof_id' => $prof->id,
  'eleve_id' => null,
  'expires_at' => now()->addMinutes(10),
  ]);
@@ -2728,6 +2729,7 @@ PROMPT;
  'token_hash' => hash('sha256', $token),
  'purpose' => 'prof_absences',
  'parent_id' => null,
+ 'prof_id' => $prof->id,
  'eleve_id' => null,
  'expires_at' => now()->addMinutes(10),
  ]);

@@ -11,6 +11,7 @@ class MagicLink extends Model
         'token_hash',
         'purpose',
         'parent_id',
+        'prof_id',
         'eleve_id',
         'expires_at',
         'used_at',
@@ -27,6 +28,11 @@ class MagicLink extends Model
     public function parent(): BelongsTo
     {
         return $this->belongsTo(ParentModel::class, 'parent_id');
+    }
+
+    public function prof(): BelongsTo
+    {
+        return $this->belongsTo(Prof::class, 'prof_id');
     }
 
     public function eleve(): BelongsTo
