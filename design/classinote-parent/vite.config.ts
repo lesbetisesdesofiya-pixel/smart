@@ -5,7 +5,7 @@ import {defineConfig} from 'vite';
 export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss()],
-    base: './',
+    base: '/app/parentV2/',
     server: {
       port: 3003,
       host: '0.0.0.0',
