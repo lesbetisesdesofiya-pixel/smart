@@ -71,7 +71,7 @@ class MagicLinkService
     {
         $token = $this->create($parent, $purpose, $eleveId);
 
-        return $this->baseUrl() . "/magic?t={$token}";
+        return $this->baseUrl() . "/magic/parent/{$purpose}?t={$token}";
     }
 
     public function getTabForPurpose(string $purpose): string

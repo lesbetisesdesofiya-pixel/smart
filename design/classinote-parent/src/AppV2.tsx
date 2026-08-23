@@ -17,16 +17,19 @@ import { ActivateScreenV2 } from './screensV2/ActivateScreenV2';
 
 const API_BASE = '/api/v1';
 
-function parseMagicToken(): string | null {
+function parseMagicToken(): { purpose: string; token: string } | null {
   const params = new URLSearchParams(window.location.search);
   const token = params.get('t');
   if (token && /^[a-f0-9]{64}$/i.test(token)) {
-    return token;
+    // Extract purpose from URL path: /magic/parent/notes -> notes
+    const pathParts = window.location.pathname.split('/');
+    const purpose = pathParts[pathParts.length - 1] || 'dashboard';
+    return { purpose, token };
   }
   return null;
 }
 
-function MagicConsumeScreen({ token }: { token: string }) {
+function MagicConsumeScreen({ purpose, token }: { purpose: string; token: string }) {
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -214,7 +217,7 @@ function LandingScreen() {
 }
 
 export default function AppV2() {
-  const magicToken = parseMagicToken();
+  const magicLink = parseMagicToken();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isActivated, setIsActivated] = useState(() => {
     try { return localStorage.getItem('classinote_parent_activated') === '1'; } catch { return false; }
@@ -226,7 +229,7 @@ export default function AppV2() {
 
   // Check auth on mount
   useEffect(() => {
-    if (magicToken) return;
+    if (magicLink) return;
     
     getUser().then(user => {
       if (user) {
@@ -234,7 +237,7 @@ export default function AppV2() {
       }
       setLoading(false);
     });
-  }, [magicToken]);
+  }, [magicLink]);
 
   const handleLogout = useCallback(() => {
     try { clearAuthData(); } catch {}
@@ -243,8 +246,8 @@ export default function AppV2() {
   }, []);
 
   // Magic link: consume token and reload
-  if (magicToken) {
-    return <MagicConsumeScreen token={magicToken} />;
+  if (magicLink) {
+    return <MagicConsumeScreen purpose={magicLink.purpose} token={magicLink.token} />;
   }
 
   // Loading

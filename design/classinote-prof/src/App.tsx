@@ -94,11 +94,14 @@ export default function App() {
   const [addSchoolLoading, setAddSchoolLoading] = useState(false);
 
   // Magic link detection - immediate on mount
-  const [magicLink, setMagicLink] = useState<{ token: string } | null>(() => {
+  const [magicLink, setMagicLink] = useState<{ purpose: string; token: string } | null>(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('t');
     if (token) {
-      return { token };
+      // Extract purpose from URL path: /magic/prof/dashboard -> dashboard
+      const pathParts = window.location.pathname.split('/');
+      const purpose = pathParts[pathParts.length - 1] || 'dashboard';
+      return { purpose, token };
     }
     return null;
   });
@@ -413,6 +416,7 @@ export default function App() {
   if (magicLink) {
     return (
       <MagicLinkScreen
+        purpose={magicLink.purpose}
         token={magicLink.token}
       />
     );

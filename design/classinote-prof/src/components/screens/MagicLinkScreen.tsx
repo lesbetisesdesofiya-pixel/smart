@@ -3,10 +3,11 @@ import React, { useEffect, useState } from 'react';
 const API_BASE = '/api/v1';
 
 interface MagicLinkScreenProps {
+  purpose: string;
   token: string;
 }
 
-export const MagicLinkScreen: React.FC<MagicLinkScreenProps> = ({ token }) => {
+export const MagicLinkScreen: React.FC<MagicLinkScreenProps> = ({ purpose, token }) => {
   const [state, setState] = useState<'loading' | 'error'>('loading');
   const [error, setError] = useState('');
 
