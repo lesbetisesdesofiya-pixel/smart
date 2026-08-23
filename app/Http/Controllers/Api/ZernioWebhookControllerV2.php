@@ -2537,6 +2537,11 @@ PROMPT;
  return;
  }
 
+ if ($norm === 'change_class') {
+ $this->sendProfMenu($conv, $prof);
+ return;
+ }
+
  // Dashboard
  if ($norm === 'prof_dashboard' || $norm === 'prof dashboard' || preg_match('/tableau.*bord|dashboard/i', $norm)) {
  $this->sendProfDashboardLink($conv, $prof);
@@ -2673,7 +2678,7 @@ PROMPT;
 
  $this->sendText($conv, "" Envoyez une *photo* de votre tableau de notes pour *{$classe?->libelle}*.\n\n' Indiquez la matière et la colonne si nécessaire.", [
  ['title' => '"™ Menu prof', 'payload' => 'menu'],
- ['title' => '"š Changer classe', 'payload' => 'menu'],
+ ['title' => '"š Changer classe', 'payload' => 'change_class'],
  ['title' => '' Mode Parent', 'payload' => 'role_parent'],
  ]);
  }
@@ -2861,7 +2866,7 @@ PROMPT;
 
  $this->sendText($conv, implode("\n", $lines), [
  ['title' => '"™ Menu prof', 'payload' => 'menu'],
- ['title' => '"š Changer classe', 'payload' => 'menu'],
+ ['title' => '"š Changer classe', 'payload' => 'change_class'],
  ['title' => '' Mode Parent', 'payload' => 'role_parent'],
  ]);
  }
@@ -2877,7 +2882,7 @@ PROMPT;
  if ($annonces->isEmpty()) {
  $this->sendText($conv, "" *Annonces*\n\nAucune annonce récente.", [
  ['title' => '"™ Menu prof', 'payload' => 'menu'],
- ['title' => '"š Changer classe', 'payload' => 'menu'],
+ ['title' => '"š Changer classe', 'payload' => 'change_class'],
  ['title' => '' Mode Parent', 'payload' => 'role_parent'],
  ]);
  return;
@@ -2894,7 +2899,7 @@ PROMPT;
 
  $this->sendText($conv, implode("\n", $lines), [
  ['title' => '"™ Menu prof', 'payload' => 'menu'],
- ['title' => '"š Changer classe', 'payload' => 'menu'],
+ ['title' => '"š Changer classe', 'payload' => 'change_class'],
  ['title' => '' Mode Parent', 'payload' => 'role_parent'],
  ]);
  }
