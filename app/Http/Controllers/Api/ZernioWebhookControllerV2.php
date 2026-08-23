@@ -2690,7 +2690,7 @@ PROMPT;
  'expires_at' => now()->addMinutes(10),
  ]);
 
- $url = config('zernio.public_url') . "/app/profV2/#/magic/prof_dashboard?token={$token}";
+ $url = config('zernio.public_url') . "/app/prof/#/magic/prof_dashboard?token={$token}";
 
  $conv->setState('awaiting_prof_action', ['prof_id' => $prof->id, 'role' => 'prof']);
 
@@ -2730,7 +2730,7 @@ PROMPT;
  'expires_at' => now()->addMinutes(10),
  ]);
 
- $url = config('zernio.public_url') . "/app/profV2/#/magic/prof_absences?token={$token}&classe_id={$classeId}";
+ $url = config('zernio.public_url') . "/app/prof/#/magic/prof_absences?token={$token}&classe_id={$classeId}";
 
  $conv->setState('awaiting_prof_action', ['prof_id' => $prof->id, 'classe_id' => $classeId, 'role' => 'prof']);
 
