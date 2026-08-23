@@ -12,11 +12,11 @@ Route::get('/app/admin/{any?}', function ($any = null) {
 })->where('any', '.*');
 
 // Magic link routes
-Route::get('/magic/prof/{purpose?}', function ($purpose = null) {
+Route::get('/magic/profV2/{purpose?}', function ($purpose = null) {
     return response()->file(public_path('app/profV2/index.html'));
 })->where('purpose', '.*');
 
-Route::get('/magic/parent/{purpose?}', function ($purpose = null) {
+Route::get('/magic/parentV2/{purpose?}', function ($purpose = null) {
     return response()->file(public_path('app/parentV2/index.html'));
 })->where('purpose', '.*');
 
