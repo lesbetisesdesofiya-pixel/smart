@@ -2609,15 +2609,11 @@ Que souhaitez-vous faire ?";
 
  // Emploi du temps
  if ($norm === 'prof_emploi' || $norm === 'prof emploi' || preg_match('/emploi|planning|horaire/i', $norm)) {
- $this->sendProfEmploi($conv, $prof);
+ $this->sendProfEmploiLink($conv, $prof);
  return;
  }
 
- // Annonces
- if ($norm === 'prof_annonces' || $norm === 'prof annonces' || preg_match('/annonce|avis/i', $norm)) {
- $this->sendProfAnnonces($conv, $prof);
- return;
- }
+ // Annonces - supprimé du menu prof
 
  $this->sendProfMenu($conv, $prof);
  }
@@ -2689,7 +2685,6 @@ Que souhaitez-vous faire ?";
         $actionRows = [
             ['id' => 'prof_dashboard', 'title' => '🏠 Tableau de bord', 'description' => 'Ouvrir le tableau de bord'],
             ['id' => 'prof_emploi', 'title' => '📅 Mon emploi du temps', 'description' => 'Vos affectations et cours'],
-            ['id' => 'prof_annonces', 'title' => '📢 Annonces', 'description' => 'Annonces de l\'administration'],
         ];
 
         if ($isParent) {
@@ -2772,6 +2767,35 @@ Que souhaitez-vous faire ?";
    'name' => 'cta_url',
    'parameters' => [
    'display_text' => 'Ouvrir le dashboard',
+   'url' => $url,
+   ],
+   ],
+   ]);
+ }
+
+ private function sendProfEmploiLink(WhatsAppConversation $conv, \App\Models\Prof $prof): void
+ {
+ $token = bin2hex(random_bytes(32));
+ \App\Models\MagicLink::create([
+ 'token_hash' => hash('sha256', $token),
+ 'purpose' => 'prof_emploi',
+ 'parent_id' => null,
+ 'prof_id' => $prof->id,
+ 'eleve_id' => null,
+ 'expires_at' => now()->addMinutes(10),
+ ]);
+
+        $url = config('zernio.public_url') . "/app/prof/#/magic/prof_emploi?token={$token}";
+
+        $conv->setState('awaiting_prof_action', ['prof_id' => $prof->id, 'role' => 'prof']);
+
+        $this->sendText($conv, "📅 *Emploi du temps*\n\nCliquez ci-dessous pour voir votre emploi du temps.\n\n⏰ Ce lien expire dans 10 minutes.", [], [
+   'type' => 'cta_url',
+   'body' => ['text' => "📅 Emploi du temps"],
+   'action' => [
+   'name' => 'cta_url',
+   'parameters' => [
+   'display_text' => 'Voir emploi du temps',
    'url' => $url,
    ],
    ],
