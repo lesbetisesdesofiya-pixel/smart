@@ -93,17 +93,15 @@ export default function App() {
   const [addSchoolError, setAddSchoolError] = useState<string | null>(null);
   const [addSchoolLoading, setAddSchoolLoading] = useState(false);
 
-  // Magic link detection
-  const [magicLink, setMagicLink] = useState<{ purpose: string; token: string } | null>(null);
-
-  useEffect(() => {
+  // Magic link detection - immediate on mount
+  const [magicLink, setMagicLink] = useState<{ purpose: string; token: string } | null>(() => {
     const hash = window.location.hash;
     const match = hash.match(/#\/magic\/([^?]+)\?token=(.+)/);
     if (match) {
-      const [, purpose, token] = match;
-      setMagicLink({ purpose, token });
+      return { purpose: match[1], token: match[2] };
     }
-  }, []);
+    return null;
+  });
 
   const loadDashboardData = useCallback(async () => {
     try {
