@@ -6,11 +6,7 @@ interface LoginScreenProps {
 }
 
 export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
-  const existingUser = getUser();
-
-  const [step, setStep] = useState<"pin" | "login" | "register" | "change_pin">(
-    existingUser ? "pin" : "register"
-  );
+  const [step, setStep] = useState<"pin" | "login" | "register" | "change_pin">("register");
   const [code, setCode] = useState("");
   const [telephone, setTelephone] = useState("");
   const [pin, setPin] = useState("");
@@ -23,11 +19,18 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   const [verified, setVerified] = useState(false);
 
   useEffect(() => {
-    if (!existingUser) {
-      checkDeviceStatus();
-    } else {
-      setCheckingDevice(false);
-    }
+    checkDeviceStatus();
+  }, []);
+
+  const checkDeviceStatus = async () => {
+    try {
+      const data = await checkDevice();
+      if (data.has_pin) {
+        setStep("pin");
+      }
+    } catch {}
+    setCheckingDevice(false);
+  };
   }, []);
 
   const checkDeviceStatus = async () => {
