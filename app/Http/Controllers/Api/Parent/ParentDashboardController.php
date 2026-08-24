@@ -105,11 +105,15 @@ class ParentDashboardController extends Controller
         ->count();
 
         // Messages non lus
-        $messagesNonLus = \App\Models\Message::where(function ($q) use ($parent) {
-            $q->where('destinable_type', ParentModel::class)
-              ->where('destinable_id', $parent->id)
-              ->where('lu', false);
-        })->count();
+        $messagesNonLus = \App\Models\Message::whereHas('conversation', function ($q) use ($parent) {
+            $q->where('parent_id', $parent->id);
+        })
+        ->where('lu', false)
+        ->where(function ($q) {
+            $q->where('sender_type', '!=', ParentModel::class)
+              ->orWhereNull('sender_type');
+        })
+        ->count();
 
         // Paiements
         $frais = \App\Models\Frais::whereIn('eleve_id', $eleveIds)
