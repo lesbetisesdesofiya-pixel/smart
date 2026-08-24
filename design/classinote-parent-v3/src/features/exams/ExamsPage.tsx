@@ -61,7 +61,7 @@ export const ExamsPage: React.FC = () => {
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1 space-y-2">
-                  <h3 className="font-semibold text-navy-800 text-lg">{exam.matiere}</h3>
+                  <h3 className="font-semibold text-navy-800 text-lg">{exam.matiere?.libelle || exam.titre}</h3>
                   <div className="flex items-center gap-4 text-sm text-gray-500">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
@@ -76,7 +76,7 @@ export const ExamsPage: React.FC = () => {
                   </div>
                 </div>
                 {exam.coefficient && (
-                  <Badge variant="primary" className="ml-3">
+                  <Badge color="navy" size="md" className="ml-3">
                     Coeff. {exam.coefficient}
                   </Badge>
                 )}
@@ -91,7 +91,7 @@ export const ExamsPage: React.FC = () => {
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end justify-center" onClick={() => setSelectedExam(null)}>
           <div className="bg-white rounded-t-3xl w-full max-w-lg p-6 space-y-4 animate-slide-up" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-navy-800">{selectedExam.matiere}</h2>
+              <h2 className="text-xl font-bold text-navy-800">{selectedExam.matiere?.libelle || selectedExam.titre}</h2>
               <button onClick={() => setSelectedExam(null)} className="p-2 rounded-full hover:bg-gray-100">
                 <X className="w-5 h-5" />
               </button>

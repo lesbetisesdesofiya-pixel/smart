@@ -55,17 +55,17 @@ export const MessagesPage: React.FC = () => {
             <ArrowLeft className="w-5 h-5 text-navy-800" />
           </button>
           <div className="w-10 h-10 rounded-full bg-navy-800/10 flex items-center justify-center text-navy-800 font-bold">
-            {(selectedConv.prof || selectedConv.nom || 'P').charAt(0).toUpperCase()}
+            {(selectedConv.prof?.prenom || selectedConv.nom || 'P').charAt(0).toUpperCase()}
           </div>
           <div>
-            <h2 className="font-semibold text-navy-800">{selectedConv.prof || selectedConv.nom}</h2>
+            <h2 className="font-semibold text-navy-800">{selectedConv.prof ? `${selectedConv.prof.prenom} ${selectedConv.prof.nom}` : selectedConv.nom || 'Conversation'}</h2>
             {selectedConv.matiere && <p className="text-xs text-gray-400">{selectedConv.matiere}</p>}
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {messages.map((msg: any, i: number) => {
-            const isMe = msg.sender === 'me' || msg.expediteur === 'parent'
+            const isMe = msg.sender_type === 'App\\Models\\ParentModel' || msg.sender === 'me'
             return (
               <div key={i} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm ${isMe ? 'bg-navy-800 text-white rounded-br-md' : 'bg-gray-100 text-navy-800 rounded-bl-md'}`}>
@@ -119,17 +119,16 @@ export const MessagesPage: React.FC = () => {
           >
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-navy-800 to-navy-600 flex items-center justify-center text-white font-bold">
-                {(conv.prof || conv.nom || 'P').charAt(0).toUpperCase()}
+                {(conv.prof?.prenom || conv.nom || 'P').charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-navy-800 truncate">{conv.prof || conv.nom}</h3>
+                  <h3 className="font-semibold text-navy-800 truncate">{conv.prof ? `${conv.prof.prenom} ${conv.prof.nom}` : conv.nom || conv.subject || 'Conversation'}</h3>
                   <span className="text-xs text-gray-400 whitespace-nowrap">
-                    {conv.lastDate ? new Date(conv.lastDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : ''}
+                    {conv.last_message_at ? new Date(conv.last_message_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : ''}
                   </span>
                 </div>
-                {conv.matiere && <p className="text-xs text-gray-400">{conv.matiere}</p>}
-                <p className="text-sm text-gray-500 truncate mt-1">{conv.lastMessage || conv.dernierMessage || ''}</p>
+                <p className="text-sm text-gray-500 truncate mt-1">{conv.last_message?.contenu || ''}</p>
               </div>
               <ChevronRight className="w-5 h-5 text-gray-300 flex-shrink-0" />
             </div>
