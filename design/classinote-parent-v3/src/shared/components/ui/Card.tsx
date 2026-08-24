@@ -16,26 +16,47 @@ export const Card: React.FC<CardProps> = ({
   children,
   onClick,
   delay = 0,
-  padding = 'p-5',
 }) => {
-  const base = 'rounded-3xl transition-all duration-300';
-  const variants = {
-    default: `bg-white border border-gray-100/80 shadow-card hover:shadow-card-hover`,
-    hero: 'bg-gradient-to-br from-[#002366] via-[#1a3a7a] to-[#2d4a8a] text-white relative overflow-hidden',
-    highlight: 'bg-gradient-to-br from-blue-50 via-indigo-50 to-violet-50 border border-blue-100/50',
-    glass: 'bg-white/70 backdrop-blur-xl border border-white/80 shadow-card',
+  const variantStyles: Record<string, React.CSSProperties> = {
+    default: {
+      background: '#ffffff',
+      border: '1px solid #f3f4f6',
+      borderRadius: '24px',
+      boxShadow: '0 4px 24px rgba(0, 35, 102, 0.06)',
+    },
+    hero: {
+      background: 'linear-gradient(135deg, #002366, #1a3a7a, #2d4a8a)',
+      color: '#ffffff',
+      borderRadius: '24px',
+      overflow: 'hidden',
+      position: 'relative',
+    },
+    highlight: {
+      background: 'linear-gradient(135deg, #eff6ff, #eef2ff, #f5f3ff)',
+      border: '1px solid rgba(219,227,244,0.5)',
+      borderRadius: '24px',
+    },
+    glass: {
+      background: 'rgba(255,255,255,0.7)',
+      backdropFilter: 'blur(20px)',
+      border: '1px solid rgba(255,255,255,0.8)',
+      borderRadius: '24px',
+      boxShadow: '0 4px 24px rgba(0, 35, 102, 0.06)',
+    },
   };
 
-  const interactive = onClick
-    ? 'cursor-pointer active:scale-[0.97] hover:-translate-y-0.5'
-    : '';
+  const interactiveStyle: React.CSSProperties = onClick ? {
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+  } : {};
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay, ease: [0.16, 1, 0.3, 1] }}
-      className={`${base} ${variants[variant]} ${interactive} ${padding} ${className}`}
+      style={{ ...variantStyles[variant], ...interactiveStyle }}
+      className={className}
       onClick={onClick}
     >
       {children}

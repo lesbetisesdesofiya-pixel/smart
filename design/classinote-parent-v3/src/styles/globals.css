@@ -11,9 +11,6 @@
   --color-navy-700: #1a2f6b;
   --color-navy-800: #002366;
   --color-navy-900: #00113a;
-  --radius-3xl: 1.5rem;
-  --shadow-card: 0 4px 24px rgba(0, 35, 102, 0.06);
-  --shadow-card-hover: 0 8px 32px rgba(0, 35, 102, 0.12);
 }
 
 * {
@@ -26,7 +23,6 @@
 html {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
@@ -36,31 +32,15 @@ body {
 }
 
 .shadow-card {
-  box-shadow: 0 4px 24px rgba(0, 35, 102, 0.06);
+  box-shadow: 0 4px 24px rgba(0, 35, 102, 0.06) !important;
 }
+
 .shadow-card-hover {
-  box-shadow: 0 8px 32px rgba(0, 35, 102, 0.12);
-}
-.shadow-card-lg {
-  box-shadow: 0 12px 40px rgba(0, 35, 102, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 35, 102, 0.12) !important;
 }
 
 .gradient-text {
   background: linear-gradient(135deg, #002366, #4a6bb5);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.gradient-text-emerald {
-  background: linear-gradient(135deg, #059669, #34d399);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.gradient-text-rose {
-  background: linear-gradient(135deg, #e11d48, #fb7185);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -74,19 +54,10 @@ body {
   100% { background-position: 200% 0; }
 }
 
-@keyframes pulse-soft {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-
 .animate-shimmer {
   background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
-}
-
-.animate-pulse-soft {
-  animation: pulse-soft 2s ease-in-out infinite;
 }
 
 .safe-area-pb {
