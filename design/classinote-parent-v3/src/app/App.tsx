@@ -33,6 +33,7 @@ function AppContent() {
       // 1. Si lien magique → consommer
       if (isMagicLink) {
         setScreen('magic');
+        setLoading(false);
         return;
       }
 
