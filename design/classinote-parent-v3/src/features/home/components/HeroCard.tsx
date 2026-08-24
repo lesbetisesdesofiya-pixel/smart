@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card } from '@/shared/components/ui/Card';
+import { CheckCircle, XCircle, BookOpen } from 'lucide-react';
 
 interface HeroCardProps {
   parentName: string;
@@ -17,14 +18,14 @@ export const HeroCard: React.FC<HeroCardProps> = ({ parentName, childName, prese
       <h2 style={{ fontSize: '30px', fontWeight: 800, marginBottom: '20px' }}>{parentName}</h2>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', borderRadius: '16px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.1)' }}>
         <div style={{ width: '44px', height: '44px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: present ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)', border: `1px solid ${present ? 'rgba(52,211,153,0.3)' : 'rgba(248,113,113,0.3)'}` }}>
-          <span style={{ fontSize: '20px' }}>{present ? '✓' : '✗'}</span>
+          {present ? <CheckCircle size={22} color="#34d399" /> : <XCircle size={22} color="#f87171" />}
         </div>
         <div>
           <p style={{ fontSize: '14px', fontWeight: 700 }}>{childName}</p>
           <p style={{ fontSize: '12px', color: 'rgba(191,219,254,0.7)' }}>{present ? "Présent(e) aujourd'hui" : "Absent(e) aujourd'hui"}</p>
         </div>
       </div>
-      {prochainCours && <p style={{ fontSize: '12px', color: 'rgba(191,219,254,0.6)', marginTop: '12px' }}>Prochain : {prochainCours.matiere} à {prochainCours.heure}</p>}
+      {prochainCours && <p style={{ fontSize: '12px', color: 'rgba(191,219,254,0.6)', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}><BookOpen size={14} /> Prochain : {prochainCours.matiere} à {prochainCours.heure}</p>}
     </div>
   </Card>
 );
