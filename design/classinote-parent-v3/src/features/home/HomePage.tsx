@@ -1,3 +1,4 @@
+import { Card } from '@/shared/components/ui/Card';
 import { useDashboard } from '@/shared/stores/stores';
 import { HeroCard, ChildSelector } from './components/HeroCard';
 import { LatestGradeCard } from './components/LatestGradeCard';
