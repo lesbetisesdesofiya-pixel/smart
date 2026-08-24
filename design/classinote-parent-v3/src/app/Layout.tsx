@@ -25,10 +25,10 @@ export const Layout: React.FC<LayoutProps> = ({ onLogout }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f5f6fa] flex flex-col">
+    <div style={{ minHeight: '100dvh', background: '#f5f6fa', display: 'flex', flexDirection: 'column' }}>
       <Header title="ClassiNote" onNotifications={() => {}} onLogout={onLogout} notifCount={notifCount} />
 
-      <main className="flex-1">
+      <main style={{ flex: 1 }}>
         {tab === 'accueil' && <HomePage onNavigate={handleNavigate} onLogout={onLogout} />}
         {tab === 'notes' && <GradesPage />}
         {tab === 'examens' && <ExamsPage />}

@@ -1,48 +1,41 @@
 import React from 'react';
 import { Card } from '@/shared/components/ui/Card';
-import { GraduationCap, CalendarDays, MessageCircle, CreditCard, ChevronRight } from 'lucide-react';
 
 interface ActionCardsProps {
   onNavigate: (tab: string) => void;
-  resume: {
-    absences_mois: number;
-    examens_a_venir: number;
-    messages_non_lus: number;
-    montant_du: number;
-  };
+  resume: { absences_mois: number; examens_a_venir: number; messages_non_lus: number; montant_du: number };
 }
 
 const actions = [
-  { id: 'notes', label: 'Notes', desc: 'Résultats et graphiques', icon: GraduationCap, gradient: 'from-blue-500 to-blue-600', shadow: 'shadow-blue-200/50' },
-  { id: 'examens', label: 'Examens', desc: 'Évaluations à venir', icon: CalendarDays, gradient: 'from-rose-500 to-rose-600', shadow: 'shadow-rose-200/50' },
-  { id: 'messages', label: 'Messages', desc: 'Discuter avec l\'école', icon: MessageCircle, gradient: 'from-indigo-500 to-indigo-600', shadow: 'shadow-indigo-200/50' },
-  { id: 'paiements', label: 'Paiements', desc: 'Scolarité et frais', icon: CreditCard, gradient: 'from-emerald-500 to-emerald-600', shadow: 'shadow-emerald-200/50' },
+  { id: 'notes', label: 'Notes', desc: 'Résultats et graphiques', gradient: 'linear-gradient(135deg, #3b82f6, #2563eb)', shadow: '0 4px 12px rgba(59,130,246,0.3)' },
+  { id: 'examens', label: 'Examens', desc: 'Évaluations à venir', gradient: 'linear-gradient(135deg, #f43f5e, #e11d48)', shadow: '0 4px 12px rgba(244,63,94,0.3)' },
+  { id: 'messages', label: 'Messages', desc: "Discuter avec l'école", gradient: 'linear-gradient(135deg, #6366f1, #4f46e5)', shadow: '0 4px 12px rgba(99,102,241,0.3)' },
+  { id: 'paiements', label: 'Paiements', desc: 'Scolarité et frais', gradient: 'linear-gradient(135deg, #10b981, #059669)', shadow: '0 4px 12px rgba(16,185,129,0.3)' },
 ];
 
 export const ActionCards: React.FC<ActionCardsProps> = ({ onNavigate, resume }) => {
-  const badges: Record<string, number> = {
-    examens: resume.examens_a_venir,
-    messages: resume.messages_non_lus,
-  };
+  const badges: Record<string, number> = { examens: resume.examens_a_venir, messages: resume.messages_non_lus };
 
   return (
-    <div className="space-y-3">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       {actions.map((action, i) => (
-        <Card key={action.id} className="p-5" delay={0.2 + i * 0.05} onClick={() => onNavigate(action.id)}>
-          <div className="flex items-center gap-4">
-            <div className={`relative w-14 h-14 rounded-2xl bg-gradient-to-br ${action.gradient} flex items-center justify-center shrink-0 shadow-lg ${action.shadow}`}>
-              <action.icon className="w-6 h-6 text-white" />
+        <Card key={action.id} delay={0.2 + i * 0.05} onClick={() => onNavigate(action.id)} style={{ padding: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: action.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: action.shadow, flexShrink: 0, position: 'relative' }}>
+              <span style={{ fontSize: '24px', color: '#ffffff' }}>
+                {action.id === 'notes' ? '📘' : action.id === 'examens' ? '📝' : action.id === 'messages' ? '💬' : '💳'}
+              </span>
               {badges[action.id] > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1.5 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">
+                <span style={{ position: 'absolute', top: '-6px', right: '-6px', minWidth: '20px', height: '20px', padding: '0 6px', background: '#f43f5e', color: '#ffffff', fontSize: '10px', fontWeight: 700, borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {badges[action.id]}
                 </span>
               )}
             </div>
-            <div className="flex-1">
-              <p className="text-base font-bold text-gray-900">{action.label}</p>
-              <p className="text-sm text-gray-400">{action.desc}</p>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: '16px', fontWeight: 700, color: '#111827' }}>{action.label}</p>
+              <p style={{ fontSize: '14px', color: '#9ca3af' }}>{action.desc}</p>
             </div>
-            <ChevronRight className="w-5 h-5 text-gray-300" />
+            <span style={{ fontSize: '20px', color: '#d1d5db' }}>›</span>
           </div>
         </Card>
       ))}

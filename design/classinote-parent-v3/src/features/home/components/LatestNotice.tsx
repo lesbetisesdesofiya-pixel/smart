@@ -1,7 +1,5 @@
 import React from 'react';
 import { Card } from '@/shared/components/ui/Card';
-import { MessageSquare } from 'lucide-react';
-import { formatRelative } from '@/shared/utils/format';
 
 interface LatestNoticeProps {
   auteur: string;
@@ -11,16 +9,16 @@ interface LatestNoticeProps {
 }
 
 export const LatestNotice: React.FC<LatestNoticeProps> = ({ auteur, contenu, date, onClick }) => (
-  <Card className="p-5" delay={0.4} onClick={onClick}>
-    <div className="flex items-center gap-3 mb-3">
-      <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center">
-        <MessageSquare className="w-5 h-5 text-violet-600" />
+  <Card delay={0.4} onClick={onClick} style={{ padding: '20px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+      <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f3e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ fontSize: '18px' }}>💬</span>
       </div>
       <div>
-        <p className="text-sm font-bold text-gray-900">{auteur}</p>
-        <p className="text-xs text-gray-400">{formatRelative(date)}</p>
+        <p style={{ fontSize: '14px', fontWeight: 700, color: '#111827' }}>{auteur}</p>
+        <p style={{ fontSize: '12px', color: '#9ca3af' }}>{date}</p>
       </div>
     </div>
-    <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">"{contenu}"</p>
+    <p style={{ fontSize: '14px', color: '#6b7280', lineHeight: 1.5, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>"{contenu}"</p>
   </Card>
 );

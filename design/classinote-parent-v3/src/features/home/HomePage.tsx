@@ -1,14 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
-import { fetchDashboard } from '@/shared/api/client';
-import { SkeletonList } from '@/shared/components/ui/Skeleton';
-import { ErrorState } from '@/shared/components/ui/Feedback';
+import { useDashboard } from '@/shared/stores/stores';
 import { HeroCard, ChildSelector } from './components/HeroCard';
 import { LatestGradeCard } from './components/LatestGradeCard';
 import { SummaryRow } from './components/SummaryRow';
 import { ActionCards } from './components/ActionCards';
 import { LatestNotice } from './components/LatestNotice';
-import { useChildrenStore } from '@/shared/stores/stores';
-import type { DashboardData } from '@/shared/types';
+import { SkeletonList } from '@/shared/components/ui/Skeleton';
+import { ErrorState } from '@/shared/components/ui/Feedback';
 
 interface HomePageProps {
   onNavigate: (tab: string) => void;
@@ -16,27 +13,21 @@ interface HomePageProps {
 }
 
 export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onLogout }) => {
-  const { activeChildId, setActiveChild } = useChildrenStore();
+  const { data, isLoading, error, refetch } = useDashboard();
 
-  const { data, isLoading, error, refetch } = useQuery<DashboardData>({
-    queryKey: ['parent-dashboard'],
-    queryFn: fetchDashboard,
-  });
-
-  if (isLoading) return <div className="px-5 pb-28 max-w-lg mx-auto space-y-4 pt-4"><SkeletonList /></div>;
+  if (isLoading) return <div style={{ padding: '20px', paddingBottom: '120px', maxWidth: '512px', margin: '0 auto' }}><SkeletonList /></div>;
   if (error || !data) return <ErrorState title="Impossible de charger les données" onRetry={() => refetch()} />;
 
   const enfants = data.enfants || [];
-  const currentId = activeChildId || enfants[0]?.id;
   const actif = data.actif || {};
   const resume = data.resume || { absences_mois: 0, examens_a_venir: 0, messages_non_lus: 0, montant_du: 0, montant_paye: 0 };
 
   return (
-    <div className="px-5 pb-28 max-w-lg mx-auto space-y-4 pt-4">
+    <div style={{ padding: '20px', paddingBottom: '120px', maxWidth: '512px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <ChildSelector
         enfants={enfants.map((e: any) => ({ id: e.id, nom: e.nom_complet || `${e.prenom} ${e.nom}`, classe: e.classe?.libelle || '' }))}
-        activeId={currentId}
-        onSelect={setActiveChild}
+        activeId={actif.id}
+        onSelect={() => {}}
       />
 
       <HeroCard
