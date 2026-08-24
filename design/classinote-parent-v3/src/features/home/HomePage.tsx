@@ -1,5 +1,5 @@
 import { Card } from '@/shared/components/ui/Card';
-import { useDashboard } from '@/shared/stores/stores';
+import { useDashboard, useChildrenStore } from '@/shared/stores/stores';
 import { HeroCard, ChildSelector } from './components/HeroCard';
 import { LatestGradeCard } from './components/LatestGradeCard';
 import { SummaryRow } from './components/SummaryRow';
@@ -14,6 +14,7 @@ interface HomePageProps {
 
 export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onLogout }) => {
   const { data, isLoading, error, refetch } = useDashboard();
+  const { setActiveChild } = useChildrenStore();
 
   if (isLoading) return <div style={{ padding: '20px', paddingBottom: '120px', maxWidth: '512px', margin: '0 auto' }}><div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>{[1,2,3,4].map(i => <div key={i} className="animate-shimmer" style={{ height: '80px', borderRadius: '24px' }} />)}</div></div>;
   if (error || !data) return <div style={{ padding: '40px', textAlign: 'center', color: '#ef4444' }}>Impossible de charger les données <button onClick={() => refetch()} style={{ marginLeft: '8px', color: '#002366', fontWeight: 700, cursor: 'pointer', border: 'none', background: 'none' }}>Réessayer</button></div>;
@@ -29,7 +30,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onLogout }) => {
       <ChildSelector
         enfants={enfants.map((e: any) => ({ id: e.id, nom: e.nom_complet || `${e.prenom} ${e.nom}`, classe: e.classe?.libelle || '' }))}
         activeId={actif.id}
-        onSelect={() => {}}
+        onSelect={(id) => { setActiveChild(id); }}
       />
 
       <HeroCard parentName={data.parent?.nom_complet || 'Parent'} childName={actif.nom || 'Enfant'} present={actif.present_aujourd_hui ?? true} prochainCours={actif.prochain_cours} />
