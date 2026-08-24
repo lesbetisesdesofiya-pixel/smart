@@ -50,9 +50,24 @@ export async function fetchDashboard() {
   return res.json();
 }
 
-export async function fetchGrades(eleveId?: number) {
-  const qs = eleveId ? `?eleve_id=${eleveId}` : '';
-  const res = await apiFetch(`/parent/notes${qs}`);
-  if (!res.ok) throw new Error('Failed to load grades');
+export async function sendMessage(conversationId: number, contenu: string) {
+  const res = await apiFetch(`/parent/messaging/${conversationId}/send`, {
+    method: 'POST',
+    body: JSON.stringify({ contenu }),
+  });
+  return res.json();
+}
+
+export async function fetchMessages(conversationId: number) {
+  const res = await apiFetch(`/parent/messaging/${conversationId}/messages`);
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function sendFeedback(type: string, contenu: string) {
+  const res = await apiFetch('/parent/feedback', {
+    method: 'POST',
+    body: JSON.stringify({ type, contenu }),
+  });
   return res.json();
 }

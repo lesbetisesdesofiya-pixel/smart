@@ -1,94 +1,118 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { apiFetch } from '@/shared/api/client';
-import { Card } from '@/shared/components/ui/Card';
-import { Badge } from '@/shared/components/ui/Badge';
-import { SkeletonList } from '@/shared/components/ui/Skeleton';
-import { EmptyState, ErrorState } from '@/shared/components/ui/Feedback';
-import { Bell, GraduationCap, CalendarDays, AlertTriangle, CreditCard, MessageCircle } from 'lucide-react';
+import React, { useState } from 'react'
+import { Card } from '@/shared/components/ui/Card'
+import { Badge } from '@/shared/components/ui/Badge'
+import { EmptyState, ErrorState } from '@/shared/components/ui/Feedback'
+import { useDashboard } from '@/shared/stores/stores'
+import { Activity, BookOpen, CreditCard, MessageSquareText, MessageCircle, Calendar, AlertTriangle, Filter } from 'lucide-react'
 
-const typeIcons: Record<string, { icon: any; color: string; bg: string }> = {
-  note: { icon: GraduationCap, color: 'text-blue-600', bg: 'bg-blue-50' },
-  examen: { icon: CalendarDays, color: 'text-rose-600', bg: 'bg-rose-50' },
-  absence: { icon: AlertTriangle, color: 'text-orange-600', bg: 'bg-orange-50' },
-  paiement: { icon: CreditCard, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-  message: { icon: MessageCircle, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-  avis: { icon: Bell, color: 'text-violet-600', bg: 'bg-violet-50' },
-};
+type FeedFilter = 'all' | 'notes' | 'examens' | 'absences' | 'remarques' | 'paiements' | 'conversations'
+
+const typeConfig: Record<string, { icon: React.ReactNode; label: string; variant: string; color: string }> = {
+  note: { icon: <BookOpen className="w-4 h-4" />, label: 'Note', variant: 'primary', color: 'bg-blue-100 text-blue-600' },
+  examen: { icon: <Calendar className="w-4 h-4" />, label: 'Examen', variant: 'warning', color: 'bg-amber-100 text-amber-600' },
+  absence: { icon: <AlertTriangle className="w-4 h-4" />, label: 'Absence', variant: 'danger', color: 'bg-red-100 text-red-600' },
+  remarque: { icon: <MessageSquareText className="w-4 h-4" />, label: 'Observation', variant: 'warning', color: 'bg-orange-100 text-orange-600' },
+  paiement: { icon: <CreditCard className="w-4 h-4" />, label: 'Paiement', variant: 'success', color: 'bg-green-100 text-green-600' },
+  conversation: { icon: <MessageCircle className="w-4 h-4" />, label: 'Message', variant: 'primary', color: 'bg-purple-100 text-purple-600' },
+}
 
 export const FeedPage: React.FC = () => {
-  const [filter, setFilter] = useState<string | null>(null);
+  const { data, isLoading, error } = useDashboard()
+  const [filter, setFilter] = useState<FeedFilter>('all')
 
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['parent-feed'],
-    queryFn: async () => {
-      const res = await apiFetch('/parent/nouveautes');
-      if (!res.ok) throw new Error('Failed');
-      return res.json();
-    },
-  });
+  if (isLoading) return <div className="p-6 animate-pulse space-y-4">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-20 bg-gray-100 rounded-3xl" />)}</div>
+  if (error) return <ErrorState message="Impossible de charger le fil d'actualité" />
 
-  if (isLoading) return <div className="px-5 pb-28 max-w-lg mx-auto pt-4"><SkeletonList /></div>;
-  if (error) return <ErrorState onRetry={() => refetch()} />;
+  const feedItems: any[] = []
 
-  const items = Array.isArray(data) ? data : [];
-  const types = [...new Set(items.map((i: any) => i.type).filter(Boolean))];
+  if (data?.notes) data.notes.forEach((n: any) => feedItems.push({ ...n, _type: 'note', _date: n.date || n.created_at }))
+  if (data?.examens) data.examens.forEach((e: any) => feedItems.push({ ...e, _type: 'examen', _date: e.date }))
+  if (data?.absences) data.absences.forEach((a: any) => feedItems.push({ ...a, _type: 'absence', _date: a.date }))
+  if (data?.remarques) data.remarques.forEach((r: any) => feedItems.push({ ...r, _type: 'remarque', _date: r.date }))
+  if (data?.paiements) data.paiements.forEach((p: any) => feedItems.push({ ...p, _type: 'paiement', _date: p.date }))
+  if (data?.conversations) data.conversations.forEach((c: any) => feedItems.push({ ...c, _type: 'conversation', _date: c.lastDate || c.date }))
 
-  const filtered = filter ? items.filter((i: any) => i.type === filter) : items;
+  feedItems.sort((a, b) => new Date(b._date || 0).getTime() - new Date(a._date || 0).getTime())
+
+  const filters: { key: FeedFilter; label: string }[] = [
+    { key: 'all', label: 'Tout' },
+    { key: 'notes', label: 'Notes' },
+    { key: 'examens', label: 'Examens' },
+    { key: 'absences', label: 'Absences' },
+    { key: 'remarques', label: 'Obs.' },
+    { key: 'paiements', label: 'Paiements' },
+    { key: 'conversations', label: 'Messages' },
+  ]
+
+  const filterMap: Record<string, string> = {
+    notes: 'note', examens: 'examen', absences: 'absence', remarques: 'remarque', paiements: 'paiement', conversations: 'conversation',
+  }
+
+  const filtered = filter === 'all' ? feedItems : feedItems.filter(item => item._type === filterMap[filter])
+
+  const getDescription = (item: any): string => {
+    switch (item._type) {
+      case 'note': return `${item.matiere || 'Matière'} — ${item.valeur ?? item.note ?? '—'}/20`
+      case 'examen': return `${item.matiere || ''} — ${item.date ? new Date(item.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : ''}`
+      case 'absence': return `${item.matiere || 'Cours'} — ${item.justifiee !== undefined ? (item.justifiee ? 'Justifiée' : 'Non justifiée') : ''}`
+      case 'remarque': return item.contenu || item.message || item.texte || 'Observation'
+      case 'paiement': return `${item.libelle || 'Paiement'} — ${item.montant ? `${item.montant} DH` : ''}`
+      case 'conversation': return item.lastMessage || item.dernierMessage || 'Nouveau message'
+      default: return ''
+    }
+  }
+
+  if (!feedItems.length) return <EmptyState icon={<Activity className="w-12 h-12" />} title="Aucune activité" description="Aucune activité récente" />
 
   return (
-    <div className="px-5 pb-28 max-w-lg mx-auto space-y-4 pt-4">
-      {/* Filtres */}
-      <div className="flex gap-2 overflow-x-auto no-scrollbar">
-        <button
-          onClick={() => setFilter(null)}
-          className={`shrink-0 px-3.5 py-1.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
-            !filter ? 'bg-navy-800 text-white' : 'bg-white text-gray-500 border border-gray-100'
-          }`}
-        >
-          Tous
-        </button>
-        {types.map((t) => {
-          const config = typeIcons[t] || typeIcons['avis'];
-          return (
-            <button
-              key={t}
-              onClick={() => setFilter(t)}
-              className={`shrink-0 px-3.5 py-1.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
-                filter === t ? 'bg-navy-800 text-white' : 'bg-white text-gray-500 border border-gray-100'
-              }`}
-            >
-              {t}
-            </button>
-          );
-        })}
+    <div className="p-6 space-y-6 max-w-2xl mx-auto">
+      <div className="space-y-1">
+        <h1 className="text-2xl font-bold text-navy-800 font-inter">Fil d'actualité</h1>
+        <p className="text-gray-500 text-sm">{feedItems.length} activité{feedItems.length > 1 ? 's' : ''} récente{feedItems.length > 1 ? 's' : ''}</p>
       </div>
 
-      {/* Feed */}
+      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        {filters.map(f => (
+          <button
+            key={f.key}
+            onClick={() => setFilter(f.key)}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${filter === f.key ? 'bg-navy-800 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
       {filtered.length === 0 ? (
-        <EmptyState icon={<Bell className="w-8 h-8" />} title="Aucune nouveauté" />
+        <EmptyState icon={<Filter className="w-10 h-10" />} title="Aucun résultat" description="Aucune activité pour ce filtre" />
       ) : (
-        <div className="space-y-2.5">
+        <div className="space-y-3">
           {filtered.map((item: any, i: number) => {
-            const config = typeIcons[item.type] || typeIcons['avis'];
-            const Icon = config.icon;
+            const config = typeConfig[item._type] || typeConfig.note
             return (
-              <Card key={item.id || i} className="p-4" delay={0.05 + i * 0.03}>
+              <Card key={i} className="p-5 rounded-3xl shadow-card">
                 <div className="flex items-start gap-3">
-                  <div className={`w-10 h-10 rounded-xl ${config.bg} flex items-center justify-center shrink-0`}>
-                    <Icon className={`w-5 h-5 ${config.color}`} />
+                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 ${config.color}`}>
+                    {config.icon}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-gray-900">{item.titre || item.type}</p>
-                    <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{item.contenu || item.description}</p>
-                    <p className="text-[10px] text-gray-300 mt-1">{item.date ? new Date(item.date).toLocaleDateString('fr-FR') : ''}</p>
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <Badge variant={config.variant as any}>{config.label}</Badge>
+                      <span className="text-xs text-gray-400">
+                        {item._date ? new Date(item._date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : ''}
+                      </span>
+                    </div>
+                    <p className="text-sm text-navy-800 font-medium truncate">
+                      {item.matiere || item.prof || item.libelle || item.nom || ''}
+                    </p>
+                    <p className="text-sm text-gray-500 truncate">{getDescription(item)}</p>
                   </div>
                 </div>
               </Card>
-            );
+            )
           })}
         </div>
       )}
     </div>
-  );
-};
+  )
+}

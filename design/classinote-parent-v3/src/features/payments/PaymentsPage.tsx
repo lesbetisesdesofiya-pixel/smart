@@ -1,81 +1,96 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { apiFetch } from '@/shared/api/client';
-import { Card } from '@/shared/components/ui/Card';
-import { Badge } from '@/shared/components/ui/Badge';
-import { ProgressRing } from '@/shared/components/ui/ProgressRing';
-import { SkeletonList } from '@/shared/components/ui/Skeleton';
-import { EmptyState, ErrorState } from '@/shared/components/ui/Feedback';
-import { CreditCard, CheckCircle, Clock, AlertCircle } from 'lucide-react';
-import { useChildrenStore } from '@/shared/stores/stores';
-import { formatMoney } from '@/shared/utils/format';
+import React from 'react'
+import { Card } from '@/shared/components/ui/Card'
+import { Badge } from '@/shared/components/ui/Badge'
+import { EmptyState, ErrorState } from '@/shared/components/ui/Feedback'
+import { useDashboard } from '@/shared/stores/stores'
+import { CreditCard, CheckCircle, Clock, AlertCircle } from 'lucide-react'
 
-export const PaymentsPage: React.FC = () => {
-  const { activeChildId } = useChildrenStore();
+const statusConfig: Record<string, { label: string; variant: string; icon: React.ReactNode }> = {
+  paid: { label: 'Payé', variant: 'success', icon: <CheckCircle className="w-4 h-4" /> },
+  pending: { label: 'En attente', variant: 'warning', icon: <Clock className="w-4 h-4" /> },
+  overdue: { label: 'En retard', variant: 'danger', icon: <AlertCircle className="w-4 h-4" /> },
+}
 
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['parent-payments', activeChildId],
-    queryFn: async () => {
-      const res = await apiFetch('/parent/paiements');
-      if (!res.ok) throw new Error('Failed');
-      return res.json();
-    },
-  });
-
-  if (isLoading) return <div className="px-5 pb-28 max-w-lg mx-auto pt-4"><SkeletonList /></div>;
-  if (error) return <ErrorState onRetry={() => refetch()} />;
-
-  const payments = Array.isArray(data) ? data : [];
-  const totalPaye = payments.filter((p: any) => p.statut === 'paye').reduce((s: number, p: any) => s + (p.montant || 0), 0);
-  const totalDu = payments.reduce((s: number, p: any) => s + (p.montant || 0), 0);
-  const pct = totalDu > 0 ? Math.round((totalPaye / totalDu) * 100) : 0;
+const ProgressRing: React.FC<{ paid: number; total: number }> = ({ paid, total }) => {
+  const radius = 54
+  const circumference = 2 * Math.PI * radius
+  const progress = total > 0 ? (paid / total) * 100 : 0
+  const offset = circumference - (progress / 100) * circumference
 
   return (
-    <div className="px-5 pb-28 max-w-lg mx-auto space-y-4 pt-4">
-      {/* Hero solde */}
-      <Card variant="hero" className="p-6" delay={0}>
-        <div className="absolute -right-12 -bottom-12 w-40 h-40 bg-white/5 rounded-full" />
-        <div className="relative z-10 flex items-center gap-5">
-          <ProgressRing value={pct} size={72} stroke={6} color="#34d399" bgColor="rgba(255,255,255,0.15)">
-            <span className="text-sm font-extrabold text-white">{pct}%</span>
-          </ProgressRing>
-          <div>
-            <p className="text-sm text-blue-200/80">Solde payé</p>
-            <p className="text-2xl font-extrabold">{formatMoney(totalPaye)} <span className="text-sm text-blue-200/60">FCFA</span></p>
-            <p className="text-xs text-blue-200/50 mt-0.5">Reste : {formatMoney(Math.max(0, totalDu - totalPaye))} FCFA</p>
+    <div className="relative w-32 h-32">
+      <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r={radius} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="10" />
+        <circle
+          cx="60" cy="60" r={radius} fill="none"
+          stroke="white" strokeWidth="10" strokeLinecap="round"
+          strokeDasharray={circumference} strokeDashoffset={offset}
+          className="transition-all duration-1000"
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
+        <span className="text-2xl font-bold">{Math.round(progress)}%</span>
+        <span className="text-xs opacity-80">payé</span>
+      </div>
+    </div>
+  )
+}
+
+export const PaymentsPage: React.FC = () => {
+  const { data, isLoading, error } = useDashboard()
+
+  if (isLoading) return <div className="p-6 animate-pulse space-y-4">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-24 bg-gray-100 rounded-3xl" />)}</div>
+  if (error) return <ErrorState message="Impossible de charger les paiements" />
+
+  const paiements = data?.paiements ?? []
+  const total = paiements.reduce((sum: number, p: any) => sum + (p.montant || 0), 0)
+  const paid = paiements.filter((p: any) => p.status === 'paid').reduce((sum: number, p: any) => sum + (p.montant || 0), 0)
+
+  if (!paiements.length) return <EmptyState icon={<CreditCard className="w-12 h-12" />} title="Aucun paiement" description="Aucun paiement enregistré" />
+
+  return (
+    <div className="p-6 space-y-6 max-w-2xl mx-auto">
+      <div className="space-y-1">
+        <h1 className="text-2xl font-bold text-white font-inter">Paiements</h1>
+        <p className="text-white/70 text-sm">Suivi de vos paiements scolaires</p>
+      </div>
+
+      <Card className="p-6 rounded-3xl bg-gradient-to-br from-navy-800 to-navy-900 shadow-card text-white">
+        <div className="flex items-center justify-between">
+          <div className="space-y-3">
+            <p className="text-white/70 text-sm">Progression</p>
+            <p className="text-3xl font-bold">{paid.toLocaleString('fr-FR')} DH</p>
+            <p className="text-white/60 text-sm">sur {total.toLocaleString('fr-FR')} DH</p>
           </div>
+          <ProgressRing paid={paid} total={total} />
         </div>
       </Card>
 
-      {/* Liste */}
-      {payments.length === 0 ? (
-        <EmptyState icon={<CreditCard className="w-8 h-8" />} title="Aucun paiement" />
-      ) : (
-        <div className="space-y-2.5">
-          {payments.map((p: any, i: number) => {
-            const isPaye = p.statut === 'paye';
-            return (
-              <Card key={p.id || i} className="p-4" delay={0.05 + i * 0.03}>
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                    isPaye ? 'bg-emerald-50' : 'bg-amber-50'
-                  }`}>
-                    {isPaye ? <CheckCircle className="w-5 h-5 text-emerald-500" /> : <Clock className="w-5 h-5 text-amber-500" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-gray-900 truncate">{p.libelle || 'Frais'}</p>
-                    <p className="text-xs text-gray-400">{p.date ? new Date(p.date).toLocaleDateString('fr-FR') : ''}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-extrabold text-gray-900">{formatMoney(p.montant || 0)}</p>
-                    <Badge color={isPaye ? 'emerald' : 'amber'}>{isPaye ? 'Payé' : 'En attente'}</Badge>
-                  </div>
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold text-navy-800">Historique</h2>
+        {paiements.map((paiement: any, i: number) => {
+          const status = statusConfig[paiement.status] || statusConfig.pending
+          return (
+            <Card key={i} className="p-5 rounded-3xl shadow-card">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <h3 className="font-semibold text-navy-800">{paiement.libelle || `Trimestre ${i + 1}`}</h3>
+                  <p className="text-sm text-gray-500">
+                    {paiement.date ? new Date(paiement.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'}
+                  </p>
                 </div>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+                <div className="text-right space-y-1">
+                  <p className="text-lg font-bold text-navy-800">{(paiement.montant || 0).toLocaleString('fr-FR')} DH</p>
+                  <Badge variant={status.variant as any} className="inline-flex items-center gap-1">
+                    {status.icon}
+                    {status.label}
+                  </Badge>
+                </div>
+              </div>
+            </Card>
+          )
+        })}
+      </div>
     </div>
-  );
-};
+  )
+}

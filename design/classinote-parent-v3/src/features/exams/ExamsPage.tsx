@@ -1,122 +1,140 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { apiFetch } from '@/shared/api/client';
-import { Card } from '@/shared/components/ui/Card';
-import { Badge } from '@/shared/components/ui/Badge';
-import { SkeletonList } from '@/shared/components/ui/Skeleton';
-import { EmptyState, ErrorState } from '@/shared/components/ui/Feedback';
-import { CalendarDays, Clock, X } from 'lucide-react';
-import { useChildrenStore } from '@/shared/stores/stores';
+import React, { useState } from 'react'
+import { Card } from '@/shared/components/ui/Card'
+import { Badge } from '@/shared/components/ui/Badge'
+import { EmptyState, ErrorState } from '@/shared/components/ui/Feedback'
+import { useDashboard } from '@/shared/stores/stores'
+import { BookOpen, Calendar, Clock, X, Filter } from 'lucide-react'
+
+type FilterType = 'all' | 'upcoming' | 'past'
 
 export const ExamsPage: React.FC = () => {
-  const { activeChildId } = useChildrenStore();
-  const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('all');
-  const [detail, setDetail] = useState<any>(null);
+  const { data, isLoading, error } = useDashboard()
+  const [filter, setFilter] = useState<FilterType>('all')
+  const [selectedExam, setSelectedExam] = useState<any>(null)
 
-  const { data: exams, isLoading, error, refetch } = useQuery({
-    queryKey: ['parent-exams', activeChildId],
-    queryFn: async () => {
-      const res = await apiFetch('/parent/evaluations');
-      if (!res.ok) throw new Error('Failed');
-      return res.json();
-    },
-  });
+  if (isLoading) return <div className="p-6 animate-pulse space-y-4">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-32 bg-gray-100 rounded-3xl" />)}</div>
+  if (error) return <ErrorState message="Impossible de charger les examens" />
+  if (!data?.examens?.length) return <EmptyState icon={<BookOpen className="w-12 h-12" />} title="Aucun examen" description="Aucun examen prévu pour le moment" />
 
-  if (isLoading) return <div className="px-5 pb-28 max-w-lg mx-auto pt-4"><SkeletonList /></div>;
-  if (error) return <ErrorState onRetry={() => refetch()} />;
+  const now = new Date()
+  const filtered = data.examens.filter((exam: any) => {
+    const examDate = new Date(exam.date)
+    if (filter === 'upcoming') return examDate >= now
+    if (filter === 'past') return examDate < now
+    return true
+  })
 
-  const examsList = Array.isArray(exams) ? exams : [];
-  const now = new Date();
-
-  const filtered = examsList.filter((e: any) => {
-    if (filter === 'upcoming') return new Date(e.date) >= now;
-    if (filter === 'past') return new Date(e.date) < now;
-    return true;
-  });
-
-  const upcoming = examsList.filter((e: any) => new Date(e.date) >= now).length;
+  const filters: { key: FilterType; label: string }[] = [
+    { key: 'all', label: 'Tous' },
+    { key: 'upcoming', label: 'À venir' },
+    { key: 'past', label: 'Passés' },
+  ]
 
   return (
-    <div className="px-5 pb-28 max-w-lg mx-auto space-y-4 pt-4">
-      {/* Stats */}
-      <Card variant="highlight" className="p-5" delay={0}>
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-rose-100 flex items-center justify-center">
-            <CalendarDays className="w-7 h-7 text-rose-600" />
-          </div>
-          <div>
-            <p className="text-3xl font-extrabold text-gray-900">{upcoming}</p>
-            <p className="text-sm text-gray-400">examen{upcoming > 1 ? 's' : ''} à venir</p>
-          </div>
-        </div>
-      </Card>
+    <div className="p-6 space-y-6 max-w-2xl mx-auto">
+      <div className="space-y-1">
+        <h1 className="text-2xl font-bold text-navy-800 font-inter">Examens</h1>
+        <p className="text-gray-500 text-sm">{data.examens.length} examen{data.examens.length > 1 ? 's' : ''} au total</p>
+      </div>
 
-      {/* Filtres */}
       <div className="flex gap-2">
-        {[
-          { id: 'all', label: 'Tous' },
-          { id: 'upcoming', label: 'À venir' },
-          { id: 'past', label: 'Passés' },
-        ].map((f) => (
+        {filters.map(f => (
           <button
-            key={f.id}
-            onClick={() => setFilter(f.id as any)}
-            className={`px-4 py-1.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
-              filter === f.id ? 'bg-navy-800 text-white' : 'bg-white text-gray-500 border border-gray-100'
-            }`}
+            key={f.key}
+            onClick={() => setFilter(f.key)}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${filter === f.key ? 'bg-navy-800 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
           >
             {f.label}
           </button>
         ))}
       </div>
 
-      {/* Liste */}
       {filtered.length === 0 ? (
-        <EmptyState icon={<CalendarDays className="w-8 h-8" />} title="Aucun examen" />
+        <EmptyState icon={<Filter className="w-10 h-10" />} title="Aucun résultat" description={`Aucun examen ${filter === 'upcoming' ? 'à venir' : filter === 'past' ? 'passé' : ''}`} />
       ) : (
-        <div className="space-y-2.5">
-          {filtered.map((exam: any, i: number) => {
-            const isFuture = new Date(exam.date) >= now;
-            return (
-              <Card key={exam.id} className="p-4" delay={0.05 + i * 0.03} onClick={() => setDetail(exam)}>
-                <div className="flex items-center gap-3">
-                  <div className={`w-12 h-12 rounded-2xl flex flex-col items-center justify-center shrink- ${
-                    isFuture ? 'bg-rose-50' : 'bg-gray-50'
-                  }`}>
-                    <span className="text-xs font-bold text-gray-400">{new Date(exam.date).toLocaleDateString('fr-FR', { month: 'short' })}</span>
-                    <span className={`text-lg font-extrabold ${isFuture ? 'text-rose-600' : 'text-gray-500'}`}>{new Date(exam.date).getDate()}</span>
+        <div className="space-y-3">
+          {filtered.map((exam: any, i: number) => (
+            <Card
+              key={i}
+              className="p-5 rounded-3xl shadow-card cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => setSelectedExam(exam)}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex-1 space-y-2">
+                  <h3 className="font-semibold text-navy-800 text-lg">{exam.matiere}</h3>
+                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      {new Date(exam.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </span>
+                    {exam.heure && (
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-4 h-4" />
+                        {exam.heure}
+                      </span>
+                    )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-gray-900 truncate">{exam.titre}</p>
-                    <p className="text-xs text-gray-400">{exam.matiere?.libelle} · Coeff. {exam.coefficient}</p>
-                  </div>
-                  <Badge color={isFuture ? 'rose' : 'gray'}>{isFuture ? 'À venir' : 'Passé'}</Badge>
                 </div>
-              </Card>
-            );
-          })}
+                {exam.coefficient && (
+                  <Badge variant="primary" className="ml-3">
+                    Coeff. {exam.coefficient}
+                  </Badge>
+                )}
+              </div>
+              {exam.salle && <p className="mt-2 text-sm text-gray-400">Salle : {exam.salle}</p>}
+            </Card>
+          ))}
         </div>
       )}
 
-      {/* Modal */}
-      {detail && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-end justify-center" onClick={() => setDetail(null)}>
-          <div className="bg-white rounded-t-3xl w-full max-w-lg p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-lg font-extrabold text-gray-900">{detail.titre}</p>
-                <p className="text-sm text-gray-400">{detail.matiere?.libelle}</p>
-              </div>
-              <button onClick={() => setDetail(null)} className="p-2 hover:bg-gray-100 rounded-xl cursor-pointer"><X className="w-5 h-5 text-gray-400" /></button>
+      {selectedExam && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end justify-center" onClick={() => setSelectedExam(null)}>
+          <div className="bg-white rounded-t-3xl w-full max-w-lg p-6 space-y-4 animate-slide-up" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-navy-800">{selectedExam.matiere}</h2>
+              <button onClick={() => setSelectedExam(null)} className="p-2 rounded-full hover:bg-gray-100">
+                <X className="w-5 h-5" />
+              </button>
             </div>
-            <div className="grid grid-cols-3 gap-3 text-center">
-              <div className="bg-gray-50 rounded-2xl p-3"><p className="text-xs text-gray-400">Date</p><p className="text-sm font-extrabold">{new Date(detail.date).toLocaleDateString('fr-FR')}</p></div>
-              <div className="bg-gray-50 rounded-2xl p-3"><p className="text-xs text-gray-400">Coefficient</p><p className="text-sm font-extrabold">{detail.coefficient}</p></div>
-              <div className="bg-gray-50 rounded-2xl p-3"><p className="text-xs text-gray-400">Barème</p><p className="text-sm font-extrabold">/{detail.note_sur || 20}</p></div>
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-500">Date</span>
+                <span className="font-medium text-navy-800">{new Date(selectedExam.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
+              </div>
+              {selectedExam.heure && (
+                <div className="flex justify-between py-2 border-b border-gray-100">
+                  <span className="text-gray-500">Heure</span>
+                  <span className="font-medium text-navy-800">{selectedExam.heure}</span>
+                </div>
+              )}
+              {selectedExam.salle && (
+                <div className="flex justify-between py-2 border-b border-gray-100">
+                  <span className="text-gray-500">Salle</span>
+                  <span className="font-medium text-navy-800">{selectedExam.salle}</span>
+                </div>
+              )}
+              {selectedExam.coefficient && (
+                <div className="flex justify-between py-2 border-b border-gray-100">
+                  <span className="text-gray-500">Coefficient</span>
+                  <span className="font-medium text-navy-800">{selectedExam.coefficient}</span>
+                </div>
+              )}
+              {selectedExam.prof && (
+                <div className="flex justify-between py-2 border-b border-gray-100">
+                  <span className="text-gray-500">Professeur</span>
+                  <span className="font-medium text-navy-800">{selectedExam.prof}</span>
+                </div>
+              )}
+              {selectedExam.description && (
+                <div className="pt-2">
+                  <span className="text-gray-500 block mb-1">Description</span>
+                  <p className="text-navy-800">{selectedExam.description}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
       )}
     </div>
-  );
-};
+  )
+}

@@ -1,94 +1,80 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { apiFetch } from '@/shared/api/client';
-import { Card } from '@/shared/components/ui/Card';
-import { SkeletonList } from '@/shared/components/ui/Skeleton';
-import { EmptyState, ErrorState } from '@/shared/components/ui/Feedback';
-import { CalendarDays, Clock, MapPin, User } from 'lucide-react';
+import React, { useState } from 'react'
+import { Card } from '@/shared/components/ui/Card'
+import { EmptyState, ErrorState } from '@/shared/components/ui/Feedback'
+import { useDashboard } from '@/shared/stores/stores'
+import { Clock, MapPin, User, CalendarDays } from 'lucide-react'
 
-const jours = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
-
-const matiereColors: Record<string, string> = {
-  'Mathématiques': 'from-blue-500 to-blue-600',
-  'Math': 'from-blue-500 to-blue-600',
-  'Français': 'from-rose-500 to-rose-600',
-  'Physique': 'from-violet-500 to-violet-600',
-  'Chimie': 'from-purple-500 to-purple-600',
-  'SVT': 'from-emerald-500 to-emerald-600',
-  'Histoire': 'from-amber-500 to-amber-600',
-  'Géographie': 'from-orange-500 to-orange-600',
-  'Anglais': 'from-teal-500 to-teal-600',
-  'EPS': 'from-green-500 to-green-600',
-};
-
-const getColor = (matiere: string) => matiereColors[matiere] || 'from-gray-500 to-gray-600';
+const days = [
+  { key: 'lun', label: 'Lun' },
+  { key: 'mar', label: 'Mar' },
+  { key: 'mer', label: 'Mer' },
+  { key: 'jeu', label: 'Jeu' },
+  { key: 'ven', label: 'Ven' },
+  { key: 'sam', label: 'Sam' },
+]
 
 export const SchedulePage: React.FC = () => {
-  const [selectedDay, setSelectedDay] = useState(new Date().getDay() === 0 ? 6 : new Date().getDay() - 1);
+  const { data, isLoading, error } = useDashboard()
 
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['parent-schedule'],
-    queryFn: async () => {
-      const res = await apiFetch('/parent/emploi-du-temps');
-      if (!res.ok) throw new Error('Failed');
-      return res.json();
-    },
-  });
+  const today = new Date().getDay()
+  const dayMap = [6, 0, 1, 2, 3, 4, 5]
+  const [selectedDay, setSelectedDay] = useState(days[dayMap[today]]?.key || 'lun')
 
-  if (isLoading) return <div className="px-5 pb-28 max-w-lg mx-auto pt-4"><SkeletonList /></div>;
-  if (error) return <ErrorState onRetry={() => refetch()} />;
+  if (isLoading) return <div className="p-6 animate-pulse space-y-4">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-24 bg-gray-100 rounded-3xl" />)}</div>
+  if (error) return <ErrorState message="Impossible de charger l'emploi du temps" />
 
-  const schedule = Array.isArray(data) ? data : [];
-  const daySchedule = schedule.filter((s: any) => {
-    const day = s.jour || s.day;
-    return day === jours[selectedDay] || day === selectedDay;
-  }).sort((a: any, b: any) => (a.heure_debut || '').localeCompare(b.heure_debut || ''));
+  const emploi = data?.emploi ?? []
+  const daySchedule = emploi.filter((c: any) => c.jour === selectedDay || c.day === selectedDay)
 
   return (
-    <div className="px-5 pb-28 max-w-lg mx-auto space-y-4 pt-4">
-      {/* Sélecteur jour */}
+    <div className="p-6 space-y-6 max-w-2xl mx-auto">
+      <div className="space-y-1">
+        <h1 className="text-2xl font-bold text-navy-800 font-inter">Emploi du temps</h1>
+        <p className="text-gray-500 text-sm">Planning de la semaine</p>
+      </div>
+
       <div className="flex gap-2">
-        {jours.map((j, i) => (
+        {days.map(d => (
           <button
-            key={j}
-            onClick={() => setSelectedDay(i)}
-            className={`flex-1 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
-              selectedDay === i ? 'bg-navy-800 text-white shadow-lg' : 'bg-white text-gray-500 border border-gray-100'
-            }`}
+            key={d.key}
+            onClick={() => setSelectedDay(d.key)}
+            className={`flex-1 py-3 rounded-2xl text-sm font-medium transition-all text-center ${selectedDay === d.key ? 'bg-navy-800 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
           >
-            {j}
+            {d.label}
           </button>
         ))}
       </div>
 
-      {/* Cours du jour */}
-      {daySchedule.length === 0 ? (
-        <EmptyState icon={<CalendarDays className="w-8 h-8" />} title="Aucun cours" description={`Pas de cours le ${jours[selectedDay]}.`} />
+      {emploi.length === 0 ? (
+        <EmptyState icon={<CalendarDays className="w-12 h-12" />} title="Aucun cours" description="Pas d'emploi du temps disponible" />
+      ) : daySchedule.length === 0 ? (
+        <EmptyState icon={<CalendarDays className="w-10 h-10" />} title="Journée libre" description="Aucun cours prévu ce jour" />
       ) : (
         <div className="space-y-3">
           {daySchedule.map((cours: any, i: number) => (
-            <Card key={i} className="p-4" delay={0.05 + i * 0.05}>
-              <div className="flex items-center gap-4">
-                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${getColor(cours.matiere || '')} flex flex-col items-center justify-center text-white shrink-0`}>
-                  <span className="text-xs font-bold">{cours.heure_debut || ''}</span>
+            <Card key={i} className="p-5 rounded-3xl shadow-card">
+              <div className="flex items-start gap-4">
+                <div className="flex flex-col items-center min-w-[60px]">
+                  <span className="text-lg font-bold text-navy-800">{cours.heure || cours.debut || '—'}</span>
+                  {cours.fin && <span className="text-xs text-gray-400">à {cours.fin}</span>}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-base font-bold text-gray-900">{cours.matiere || 'Cours'}</p>
-                  <div className="flex items-center gap-3 mt-1">
+                <div className="w-px h-12 bg-gray-200 self-center" />
+                <div className="flex-1 space-y-2">
+                  <h3 className="font-semibold text-navy-800 text-lg">{cours.matiere}</h3>
+                  <div className="flex flex-wrap gap-3 text-sm text-gray-500">
                     {cours.prof && (
-                      <span className="flex items-center gap-1 text-xs text-gray-400">
-                        <User className="w-3 h-3" /> {cours.prof}
+                      <span className="flex items-center gap-1">
+                        <User className="w-4 h-4" />
+                        {cours.prof}
                       </span>
                     )}
                     {cours.salle && (
-                      <span className="flex items-center gap-1 text-xs text-gray-400">
-                        <MapPin className="w-3 h-3" /> {cours.salle}
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-4 h-4" />
+                        {cours.salle}
                       </span>
                     )}
                   </div>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className="text-xs text-gray-400">{cours.heure_debut} - {cours.heure_fin}</p>
                 </div>
               </div>
             </Card>
@@ -96,5 +82,5 @@ export const SchedulePage: React.FC = () => {
         </div>
       )}
     </div>
-  );
-};
+  )
+}

@@ -1,119 +1,106 @@
-import React, { useState } from 'react';
-import { Card } from '@/shared/components/ui/Card';
-import { apiFetch } from '@/shared/api/client';
-import { Send, CheckCircle, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import React, { useState } from 'react'
+import { Card } from '@/shared/components/ui/Card'
+import { useDashboard } from '@/shared/stores/stores'
+import { HelpCircle, Send, ChevronDown, CheckCircle, Bug, Lightbulb, MessageSquare } from 'lucide-react'
+
+type TicketType = 'bug' | 'suggestion' | 'avis'
+
+const ticketTypes: { key: TicketType; label: string; icon: React.ReactNode }[] = [
+  { key: 'bug', label: 'Bug', icon: <Bug className="w-4 h-4" /> },
+  { key: 'suggestion', label: 'Suggestion', icon: <Lightbulb className="w-4 h-4" /> },
+  { key: 'avis', label: 'Avis', icon: <MessageSquare className="w-4 h-4" /> },
+]
+
+const faqItems = [
+  { q: 'Comment consulter les notes de mon enfant ?', a: 'Rendez-vous dans la section Notes depuis le menu principal. Vous y trouverez toutes les notes par matière et par trimestre.' },
+  { q: 'Comment signaler une absence ?', a: 'Contactez directement l\'établissement via la section Messages ou envoyez un justificatif via le formulaire de support.' },
+  { q: 'Les paiements sont-ils sécurisés ?', a: 'Oui, toutes les transactions sont sécurisées et chiffrées. Vous pouvez suivre vos paiements dans la section dédiée.' },
+  { q: 'Comment contacter un professeur ?', a: 'Utilisez la section Messages pour envoyer un message direct au professeur concerné.' },
+  { q: 'Puis-je modifier mes informations ?', a: 'Les informations de l\'élève sont gérées par l\'établissement. Contactez-les pour toute modification.' },
+]
 
 export const SupportPage: React.FC = () => {
-  const [type, setType] = useState<'bug' | 'suggestion' | 'avis'>('suggestion');
-  const [message, setMessage] = useState('');
-  const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
-  const [error, setError] = useState('');
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  useDashboard()
+  const [ticketType, setTicketType] = useState<TicketType>('suggestion')
+  const [message, setMessage] = useState('')
+  const [sent, setSent] = useState(false)
+  const [openFaq, setOpenFaq] = useState<number | null>(null)
 
-  const handleSend = async () => {
-    if (!message.trim()) return;
-    setSending(true);
-    setError('');
-    try {
-      const res = await apiFetch('/parent/feedback', {
-        method: 'POST',
-        body: JSON.stringify({ type, contenu: message.trim() }),
-      });
-      if (res.ok) {
-        setSent(true);
-        setMessage('');
-      } else {
-        setError('Erreur lors de l\'envoi');
-      }
-    } catch {
-      setError('Erreur réseau');
-    } finally { setSending(false); }
-  };
-
-  const faq = [
-    { q: 'Comment voir les notes de mon enfant ?', r: 'Allez dans l\'onglet "Notes" depuis le menu en bas de l\'écran.' },
-    { q: 'Comment contacter un professeur ?', r: 'Allez dans "Messages" et démarrez une conversation avec le professeur souhaité.' },
-    { q: 'Comment payer les frais scolaires ?', r: 'Consultez l\'onglet "Paiements" pour voir les frais dus et l\'historique.' },
-  ];
+  const handleSend = () => {
+    if (!message.trim()) return
+    setSent(true)
+    setTimeout(() => { setSent(false); setMessage('') }, 3000)
+  }
 
   return (
-    <div className="px-5 pb-28 max-w-lg mx-auto space-y-4 pt-4">
-      {/* Formulaire */}
-      <Card className="p-5" delay={0}>
-        <h3 className="text-base font-bold text-gray-900 mb-4">Nous contacter</h3>
+    <div className="p-6 space-y-6 max-w-2xl mx-auto">
+      <div className="space-y-1">
+        <h1 className="text-2xl font-bold text-navy-800 font-inter">Support</h1>
+        <p className="text-gray-500 text-sm">Nous sommes là pour vous aider</p>
+      </div>
 
-        {/* Type */}
-        <div className="flex gap-2 mb-4">
-          {[
-            { id: 'bug', label: 'Bug' },
-            { id: 'suggestion', label: 'Suggestion' },
-            { id: 'avis', label: 'Avis' },
-          ].map((t) => (
+      <Card className="p-6 rounded-3xl shadow-card space-y-5">
+        <h2 className="text-lg font-semibold text-navy-800">Nous contacter</h2>
+
+        <div className="flex gap-2">
+          {ticketTypes.map(t => (
             <button
-              key={t.id}
-              onClick={() => setType(t.id as any)}
-              className={`px-4 py-1.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
-                type === t.id ? 'bg-navy-800 text-white' : 'bg-gray-50 text-gray-500 border border-gray-100'
-              }`}
+              key={t.key}
+              onClick={() => setTicketType(t.key)}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-medium transition-all ${ticketType === t.key ? 'bg-navy-800 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
             >
+              {t.icon}
               {t.label}
             </button>
           ))}
         </div>
 
-        {/* Message */}
         <textarea
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          onChange={e => setMessage(e.target.value)}
           placeholder="Décrivez votre demande..."
-          rows={4}
-          className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-navy-400"
+          rows={5}
+          className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-200 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-navy-800/20 focus:border-navy-800/30 transition-all"
         />
-
-        {error && <p className="text-xs text-rose-500 mt-2">{error}</p>}
-        {sent && (
-          <div className="flex items-center gap-2 mt-3 text-emerald-600">
-            <CheckCircle className="w-4 h-4" />
-            <p className="text-sm font-bold">Message envoyé !</p>
-          </div>
-        )}
 
         <button
           onClick={handleSend}
-          disabled={!message.trim() || sending}
-          className="w-full mt-4 py-3 bg-navy-800 text-white font-bold text-sm rounded-2xl hover:bg-navy-700 disabled:opacity-40 transition-all cursor-pointer flex items-center justify-center gap-2"
+          disabled={!message.trim()}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-navy-800 text-white font-medium disabled:opacity-40 hover:bg-navy-700 transition-colors"
         >
-          <Send className="w-4 h-4" />
-          {sending ? 'Envoi...' : 'Envoyer'}
+          {sent ? (
+            <>
+              <CheckCircle className="w-5 h-5" />
+              Envoyé !
+            </>
+          ) : (
+            <>
+              <Send className="w-5 h-5" />
+              Envoyer
+            </>
+          )}
         </button>
       </Card>
 
-      {/* FAQ */}
-      <Card className="p-5" delay={0.1}>
-        <div className="flex items-center gap-2 mb-4">
-          <HelpCircle className="w-5 h-5 text-navy-600" />
-          <h3 className="text-base font-bold text-gray-900">Questions fréquentes</h3>
-        </div>
-        <div className="space-y-2">
-          {faq.map((item, i) => (
-            <div key={i} className="border border-gray-100 rounded-2xl overflow-hidden">
-              <button
-                onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                className="w-full flex items-center justify-between p-4 text-left cursor-pointer hover:bg-gray-50 transition-colors"
-              >
-                <p className="text-sm font-semibold text-gray-900 pr-4">{item.q}</p>
-                {openFaq === i ? <ChevronUp className="w-4 h-4 text-gray-400 shrink-0" /> : <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />}
-              </button>
-              {openFaq === i && (
-                <div className="px-4 pb-4">
-                  <p className="text-sm text-gray-500 leading-relaxed">{item.r}</p>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </Card>
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold text-navy-800">Questions fréquentes</h2>
+        {faqItems.map((item, i) => (
+          <Card key={i} className="rounded-3xl shadow-card overflow-hidden">
+            <button
+              onClick={() => setOpenFaq(openFaq === i ? null : i)}
+              className="w-full p-5 flex items-center justify-between text-left"
+            >
+              <span className="font-medium text-navy-800 text-sm pr-4">{item.q}</span>
+              <ChevronDown className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform ${openFaq === i ? 'rotate-180' : ''}`} />
+            </button>
+            {openFaq === i && (
+              <div className="px-5 pb-5">
+                <p className="text-sm text-gray-600 leading-relaxed">{item.a}</p>
+              </div>
+            )}
+          </Card>
+        ))}
+      </div>
     </div>
-  );
-};
+  )
+}
