@@ -5,6 +5,7 @@ import { LatestGradeCard } from './components/LatestGradeCard';
 import { SummaryRow } from './components/SummaryRow';
 import { ActionCards } from './components/ActionCards';
 import { LatestNotice } from './components/LatestNotice';
+import { CalendarDays, AlertTriangle, Clock } from 'lucide-react';
 
 interface HomePageProps {
   onNavigate: (tab: string) => void;
@@ -43,26 +44,52 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onLogout }) => {
 
       {data.dernier_avis && <LatestNotice auteur={data.dernier_avis.auteur} contenu={data.dernier_avis.contenu} date={data.dernier_avis.date} onClick={() => onNavigate('avis')} />}
 
-      {/* Emploi du temps */}
-      {emploi.length > 0 && (
-        <Card delay={0.45} onClick={() => onNavigate('schedule')} style={{ padding: '20px' }}>
+      {/* Absences */}
+      {resume.absences_mois > 0 && (
+        <Card delay={0.4} onClick={() => onNavigate('examens')} style={{ padding: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f3e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: '18px' }}>📅</span></div>
+            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#fff7ed', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><AlertTriangle size={18} color="#f97316" /></div>
             <div>
-              <p style={{ fontSize: '16px', fontWeight: 700, color: '#111827' }}>Emploi du temps</p>
-              <p style={{ fontSize: '12px', color: '#9ca3af' }}>{emploi.length} cours aujourd'hui</p>
+              <p style={{ fontSize: '16px', fontWeight: 700, color: '#111827' }}>Absences</p>
+              <p style={{ fontSize: '12px', color: '#9ca3af' }}>{resume.absences_mois} absence{resume.absences_mois > 1 ? 's' : ''} ce mois</p>
             </div>
           </div>
-          {emploi.slice(0, 3).map((c: any, i: number) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderTop: i > 0 ? '1px solid #f3f4f6' : 'none' }}>
-              <p style={{ fontSize: '13px', fontWeight: 700, color: '#002366', minWidth: '50px' }}>{c.heure || c.debut}</p>
-              <p style={{ fontSize: '13px', fontWeight: 600, color: '#374151' }}>{c.matiere}</p>
-              {c.salle && <p style={{ fontSize: '11px', color: '#9ca3af' }}>({c.salle})</p>}
+          {data.absences && data.absences.slice(0, 3).map((a: any, i: number) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderTop: i > 0 ? '1px solid #f3f4f6' : 'none' }}>
+              <p style={{ fontSize: '13px', color: '#374151' }}>{a.date ? new Date(a.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }) : ''}</p>
+              <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '8px', background: a.justifie ? '#ecfdf5' : '#fef2f2', color: a.justifie ? '#10b981' : '#ef4444', fontWeight: 700 }}>{a.justifie ? 'Justifiée' : 'Non justifiée'}</span>
             </div>
           ))}
-          {emploi.length > 3 && <p style={{ fontSize: '12px', color: '#6366f1', fontWeight: 600, marginTop: '8px', textAlign: 'center' }}>+{emploi.length - 3} autres cours</p>}
+          {resume.absences_mois > 3 && <p style={{ fontSize: '12px', color: '#6366f1', fontWeight: 600, marginTop: '8px', textAlign: 'center' }}>Voir toutes les absences</p>}
         </Card>
       )}
+
+      {/* Emploi du temps */}
+      <Card delay={0.45} onClick={() => onNavigate('schedule')} style={{ padding: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f3e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CalendarDays size={18} color="#9333ea" /></div>
+          <div>
+            <p style={{ fontSize: '16px', fontWeight: 700, color: '#111827' }}>Emploi du temps</p>
+            <p style={{ fontSize: '12px', color: '#9ca3af' }}>{emploi.length > 0 ? `${emploi.length} cours aujourd'hui` : 'Aucun cours'}</p>
+          </div>
+        </div>
+        {emploi.length > 0 ? (
+          <>
+            {emploi.slice(0, 3).map((c: any, i: number) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderTop: i > 0 ? '1px solid #f3f4f6' : 'none' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#f3e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Clock size={16} color="#9333ea" /></div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: '13px', fontWeight: 600, color: '#374151' }}>{c.matiere}</p>
+                  <p style={{ fontSize: '11px', color: '#9ca3af' }}>{c.heure || c.debut}{c.salle ? ` · ${c.salle}` : ''}</p>
+                </div>
+              </div>
+            ))}
+            {emploi.length > 3 && <p style={{ fontSize: '12px', color: '#6366f1', fontWeight: 600, marginTop: '8px', textAlign: 'center' }}>+{emploi.length - 3} autres cours</p>}
+          </>
+        ) : (
+          <p style={{ fontSize: '13px', color: '#9ca3af', textAlign: 'center', padding: '16px 0' }}>Pas de cours programmé aujourd'hui</p>
+        )}
+      </Card>
 
       {/* Dernières remarques */}
       {remarques.length > 0 && (
