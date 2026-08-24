@@ -21,44 +21,68 @@ export const MagicConsumePage: React.FC<MagicConsumePageProps> = ({ onSuccess })
   const magic = parseMagicToken();
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
+  const [debug, setDebug] = useState<string[]>([]);
+
+  const log = (msg: string) => {
+    console.log('[PARENT-V3]', msg);
+    setDebug(prev => [...prev, `${new Date().toLocaleTimeString()} - ${msg}`]);
+  };
 
   useEffect(() => {
-    if (!magic) return;
+    if (!magic) {
+      log('Pas de token magique trouvé');
+      return;
+    }
     let cancelled = false;
+    log(`Token trouvé: ${magic.token.substring(0, 16)}...`);
 
-    // D'abord vérifier si déjà connecté
+    // Étape 1: Vérifier session
+    log('Étape 1: Vérification session /auth/me...');
     fetch('/api/v1/auth/me', {
       method: 'GET',
       credentials: 'include',
       headers: { Accept: 'application/json' },
-    }).then(res => res.json()).then(data => {
+    }).then(res => {
+      log(`Réponse /auth/me: status=${res.status}`);
+      return res.json();
+    }).then(data => {
+      log(`Données /auth/me: ${JSON.stringify(data)}`);
       if (data.authenticated) {
-        // Déjà connecté → recharger sans le token
+        log('Déjà connecté → rechargement');
         window.location.href = window.location.pathname;
         return;
       }
 
-      // Pas connecté → consommer le lien
+      // Étape 2: Consommer le lien
+      log('Étape 2: Consommation du lien magique...');
       fetch('/api/v1/magic/consume', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ token: magic.token }),
-      }).then(res => res.json()).then(json => {
+      }).then(res => {
+        log(`Réponse /magic/consume: status=${res.status}`);
+        return res.json();
+      }).then(json => {
         if (cancelled) return;
+        log(`Données /magic/consume: ${JSON.stringify(json)}`);
         if (!json.success) {
+          log(`ERREUR: ${json.message}`);
           setError(json.message || 'Lien invalide ou expiré.');
           return;
         }
+        log('Succès! Redirection dans 1s...');
         setDone(true);
-        // Recharger la page sans le token dans l'URL
         setTimeout(() => {
+          log('Redirection maintenant...');
           window.location.href = window.location.pathname;
         }, 1000);
-      }).catch(() => {
+      }).catch(err => {
+        log(`ERREUR fetch /magic/consume: ${err.message}`);
         if (!cancelled) setError('Erreur. Réessayez.');
       });
-    }).catch(() => {
+    }).catch(err => {
+      log(`ERREUR fetch /auth/me: ${err.message}`);
       if (!cancelled) setError('Erreur. Réessayez.');
     });
 
@@ -71,6 +95,9 @@ export const MagicConsumePage: React.FC<MagicConsumePageProps> = ({ onSuccess })
         <div className="text-center space-y-3">
           <AlertCircle className="w-12 h-12 text-rose-400 mx-auto" />
           <p className="text-sm text-gray-600">Lien invalide.</p>
+          <pre className="text-xs text-left bg-gray-100 p-3 rounded-lg mt-4 max-w-sm overflow-auto">
+            {debug.join('\n')}
+          </pre>
         </div>
       </div>
     );
@@ -83,6 +110,9 @@ export const MagicConsumePage: React.FC<MagicConsumePageProps> = ({ onSuccess })
           <Link2 className="w-12 h-12 text-rose-400 mx-auto" />
           <p className="text-sm text-gray-600">{error}</p>
           <p className="text-xs text-gray-400">Demandez un nouveau lien via WhatsApp.</p>
+          <pre className="text-xs text-left bg-gray-100 p-3 rounded-lg mt-4 max-w-sm overflow-auto">
+            {debug.join('\n')}
+          </pre>
         </div>
       </div>
     );
@@ -95,16 +125,22 @@ export const MagicConsumePage: React.FC<MagicConsumePageProps> = ({ onSuccess })
           <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto" />
           <p className="text-sm font-bold text-gray-900">Connexion réussie !</p>
           <p className="text-xs text-gray-400">Redirection...</p>
+          <pre className="text-xs text-left bg-gray-100 p-3 rounded-lg mt-4 max-w-sm overflow-auto">
+            {debug.join('\n')}
+          </pre>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f9ff] flex items-center justify-center">
+    <div className="min-h-screen bg-[#f8f9ff] flex items-center justify-center p-6">
       <div className="text-center space-y-3">
         <div className="w-8 h-8 border-2 border-navy-400 border-t-transparent rounded-full animate-spin mx-auto" />
         <p className="text-sm text-gray-400">Connexion...</p>
+        <pre className="text-xs text-left bg-gray-100 p-3 rounded-lg mt-4 max-w-sm overflow-auto">
+          {debug.join('\n')}
+        </pre>
       </div>
     </div>
   );

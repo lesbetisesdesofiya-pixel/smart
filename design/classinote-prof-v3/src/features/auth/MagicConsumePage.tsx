@@ -25,68 +25,98 @@ export const MagicConsumePage: React.FC<MagicConsumePageProps> = ({ onSuccess })
   const [showPin, setShowPin] = useState(false);
   const [pinLoading, setPinLoading] = useState(false);
   const [userData, setUserData] = useState<any>(null);
+  const [debug, setDebug] = useState<string[]>([]);
+
+  const log = (msg: string) => {
+    console.log('[PROF-V3]', msg);
+    setDebug(prev => [...prev, `${new Date().toLocaleTimeString()} - ${msg}`]);
+  };
 
   useEffect(() => {
     if (!magic) {
+      log('Pas de token magique trouvé');
       setStep('error');
       setError('Lien invalide.');
       return;
     }
 
     let cancelled = false;
+    log(`Token trouvé: ${magic.token.substring(0, 16)}...`);
 
-    // D'abord vérifier si déjà connecté
+    // Étape 1: Vérifier session
+    log('Étape 1: Vérification session /auth/me...');
     fetch('/api/v1/auth/me', {
       method: 'GET',
       credentials: 'include',
       headers: { Accept: 'application/json' },
-    }).then(res => res.json()).then(data => {
+    }).then(res => {
+      log(`Réponse /auth/me: status=${res.status}`);
+      return res.json();
+    }).then(data => {
+      log(`Données /auth/me: ${JSON.stringify(data)}`);
       if (data.authenticated) {
-        // Déjà connecté → recharger sans le token
+        log('Déjà connecté → rechargement');
         window.location.href = window.location.pathname;
         return;
       }
 
-      // Pas connecté → consommer le lien magique
+      // Étape 2: Consommer le lien
+      log('Étape 2: Consommation du lien magique...');
       fetch('/api/v1/magic/consume', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ token: magic.token }),
-      }).then(res => res.json()).then(json => {
+      }).then(res => {
+        log(`Réponse /magic/consume: status=${res.status}`);
+        return res.json();
+      }).then(json => {
         if (cancelled) return;
+        log(`Données /magic/consume: ${JSON.stringify(json)}`);
         if (!json.success) {
+          log(`ERREUR consume: ${json.message}`);
           setStep('error');
           setError(json.message || 'Lien invalide ou expiré.');
           return;
         }
         setUserData(json);
-        // Vérifier si le prof a déjà un PIN
+        log(`Type utilisateur: ${json.type}`);
+
+        // Étape 3: Vérifier si appareil enregistré
         if (json.type === 'prof') {
-          // Vérifier si PIN existe déjà
+          log('Étape 3: Vérification appareil /auth/device/check...');
           fetch('/api/v1/auth/device/check', {
             credentials: 'include',
             headers: { Accept: 'application/json' },
-          }).then(r => r.json()).then(deviceData => {
+          }).then(r => {
+            log(`Réponse /auth/device/check: status=${r.status}`);
+            return r.json();
+          }).then(deviceData => {
+            log(`Données device check: ${JSON.stringify(deviceData)}`);
             if (deviceData.trusted) {
-              // Appareil déjà enregistré → recharger
+              log('Appareil déjà enregistré → rechargement');
               window.location.href = window.location.pathname;
             } else {
-              // Premier fois → demander PIN
+              log('Premier fois → demande PIN');
               setStep('set-pin');
             }
-          }).catch(() => setStep('set-pin'));
+          }).catch(err => {
+            log(`ERREUR device check: ${err.message}`);
+            setStep('set-pin');
+          });
         } else {
-          // Parent → recharger
+          log('Parent → rechargement');
           window.location.href = window.location.pathname;
         }
-      }).catch(() => {
+      }).catch(err => {
+        log(`ERREUR fetch /magic/consume: ${err.message}`);
         if (!cancelled) {
           setStep('error');
           setError('Erreur. Réessayez.');
         }
       });
-    }).catch(() => {
+    }).catch(err => {
+      log(`ERREUR fetch /auth/me: ${err.message}`);
       if (!cancelled) {
         setStep('error');
         setError('Erreur. Réessayez.');
@@ -101,6 +131,7 @@ export const MagicConsumePage: React.FC<MagicConsumePageProps> = ({ onSuccess })
     if (pin.length < 4) return;
 
     setPinLoading(true);
+    log(`Enregistrement PIN...`);
     try {
       const res = await fetch('/api/v1/auth/device/register', {
         method: 'POST',
@@ -114,13 +145,17 @@ export const MagicConsumePage: React.FC<MagicConsumePageProps> = ({ onSuccess })
       });
 
       const data = await res.json();
+      log(`Réponse register: ${JSON.stringify(data)}`);
       if (res.ok && data.success) {
+        log('PIN enregistré avec succès!');
         setStep('done');
         setTimeout(() => onSuccess(), 1500);
       } else {
+        log(`ERREUR register: ${data.message}`);
         setError(data.message || 'Erreur');
       }
-    } catch {
+    } catch (err: any) {
+      log(`ERREUR réseau register: ${err.message}`);
       setError('Erreur réseau');
     } finally {
       setPinLoading(false);
@@ -130,10 +165,13 @@ export const MagicConsumePage: React.FC<MagicConsumePageProps> = ({ onSuccess })
   if (step === 'error') {
     return (
       <div className="min-h-screen bg-[#f8f9ff] flex items-center justify-center p-6">
-        <div className="text-center space-y-3">
+        <div className="text-center space-y-3 max-w-sm">
           <AlertCircle className="w-12 h-12 text-rose-400 mx-auto" />
           <p className="text-sm text-gray-600">{error}</p>
           <p className="text-xs text-gray-400">Demandez un nouveau lien via WhatsApp.</p>
+          <pre className="text-xs text-left bg-gray-100 p-3 rounded-lg mt-4 overflow-auto max-h-60">
+            {debug.join('\n')}
+          </pre>
         </div>
       </div>
     );
@@ -200,6 +238,10 @@ export const MagicConsumePage: React.FC<MagicConsumePageProps> = ({ onSuccess })
               {pinLoading ? 'Enregistrement...' : 'Enregistrer mon appareil'}
             </button>
           </form>
+
+          <pre className="text-xs text-left bg-white/5 text-blue-200/60 p-3 rounded-lg mt-4 overflow-auto max-h-40">
+            {debug.join('\n')}
+          </pre>
         </motion.div>
       </div>
     );
@@ -207,21 +249,27 @@ export const MagicConsumePage: React.FC<MagicConsumePageProps> = ({ onSuccess })
 
   if (step === 'done') {
     return (
-      <div className="min-h-screen bg-[#f8f9ff] flex items-center justify-center">
-        <div className="text-center space-y-3">
+      <div className="min-h-screen bg-[#f8f9ff] flex items-center justify-center p-6">
+        <div className="text-center space-y-3 max-w-sm">
           <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto" />
           <p className="text-sm font-bold text-gray-900">Appareil enregistré !</p>
           <p className="text-xs text-gray-400">Redirection...</p>
+          <pre className="text-xs text-left bg-gray-100 p-3 rounded-lg mt-4 overflow-auto max-h-60">
+            {debug.join('\n')}
+          </pre>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f9ff] flex items-center justify-center">
-      <div className="text-center space-y-3">
+    <div className="min-h-screen bg-[#f8f9ff] flex items-center justify-center p-6">
+      <div className="text-center space-y-3 max-w-sm">
         <div className="w-8 h-8 border-2 border-navy-400 border-t-transparent rounded-full animate-spin mx-auto" />
         <p className="text-sm text-gray-400">Connexion...</p>
+        <pre className="text-xs text-left bg-gray-100 p-3 rounded-lg mt-4 overflow-auto max-h-60">
+          {debug.join('\n')}
+        </pre>
       </div>
     </div>
   );
