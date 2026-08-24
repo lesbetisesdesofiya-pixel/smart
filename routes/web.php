@@ -43,3 +43,20 @@ Route::get('/app/superadmin/{any?}', function ($any = null) {
 Route::get('/superadmin/{any?}', function ($any = null) {
     return response()->file(public_path('app/superadmin/index.html'));
 })->where('any', '.*');
+
+// V3 Apps
+Route::get('/app/profV3/{any?}', function ($any = null) {
+    return response()->file(public_path('app/profV3/index.html'));
+})->where('any', '.*');
+
+Route::get('/app/parentV3/{any?}', function ($any = null) {
+    return response()->file(public_path('app/parentV3/index.html'));
+})->where('any', '.*');
+
+Route::get('/magic/profV3/{purpose?}', function ($purpose = null) {
+    return response()->file(public_path('app/profV3/index.html'));
+})->where('purpose', '.*');
+
+Route::get('/magic/parentV3/{purpose?}', function ($purpose = null) {
+    return response()->file(public_path('app/parentV3/index.html'));
+})->where('purpose', '.*');

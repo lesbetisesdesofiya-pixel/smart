@@ -156,6 +156,38 @@ class TeacherController extends Controller
             ];
         });
 
+        // Taux de saisie des notes
+        $totalEvals = $evaluations->count() + $groupParents->count();
+        $evalsWithNotes = $evaluations->filter(fn($e) => $e->notes_count > 0)->count();
+        $tauxSaisie = $totalEvals > 0 ? round(($evalsWithNotes / $totalEvals) * 100) : 0;
+
+        // Moyennes par classe
+        $moyennesParClasse = $classes->map(function ($classe) use ($anneeActive) {
+            $notes = Note::whereHas('evaluation', function ($q) use ($classe, $anneeActive) {
+                $q->where('classe_id', $classe->id)
+                  ->when($anneeActive, fn($eq) => $eq->where('annee_scolaire_id', $anneeActive->id));
+            })->get();
+
+            $moyenne = $notes->count() > 0 ? round($notes->avg('note'), 1) : 0;
+
+            return [
+                'classe' => $classe->libelle,
+                'moyenne' => $moyenne,
+            ];
+        })->filter(fn($c) => $c['moyenne'] > 0)->values();
+
+        // Absences cette semaine
+        $startOfWeek = now()->startOfWeek();
+        $absencesSemaine = \App\Models\Presence::whereHas('eleve', function ($q) use ($classes) {
+            $q->whereIn('classe_id', $classes->pluck('id'));
+        })
+        ->whereBetween('date', [$startOfWeek, now()])
+        ->where('est_present', false)
+        ->count();
+
+        // Emploi du jour (placeholder - retourne vide si pas de table emploi_du_temps)
+        $emploiDuJour = [];
+
         return response()->json([
             'prof' => [
                 'id' => $prof->id,
@@ -172,8 +204,12 @@ class TeacherController extends Controller
             'stats' => [
                 'nb_classes' => $classes->count(),
                 'nb_matieres' => $matieres->count(),
-                'nb_evaluations' => $evaluations->count() + $groupParents->count(),
+                'nb_evaluations' => $totalEvals,
+                'taux_saisie' => $tauxSaisie,
+                'moyennes_par_classe' => $moyennesParClasse,
+                'absences_semaine' => $absencesSemaine,
             ],
+            'emploi_du_jour' => $emploiDuJour,
         ]);
     }
 

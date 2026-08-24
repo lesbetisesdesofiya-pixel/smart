@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\MagicLink;
 use App\Models\ParentModel;
+use App\Models\Prof;
 use App\Models\Setting;
 
 class MagicLinkService
@@ -71,7 +72,29 @@ class MagicLinkService
     {
         $token = $this->create($parent, $purpose, $eleveId);
 
-        return $this->baseUrl() . "/magic/parentV2/{$purpose}?t={$token}";
+        return $this->baseUrl() . "/magic/parentV3/{$purpose}?t={$token}";
+    }
+
+    public function createForProf(Prof $prof, string $purpose): string
+    {
+        $token = bin2hex(random_bytes(32));
+
+        MagicLink::create([
+            'token_hash' => hash('sha256', $token),
+            'purpose' => $purpose,
+            'user_type' => 'prof',
+            'prof_id' => $prof->id,
+            'expires_at' => now()->addMinutes(self::TTL_MINUTES),
+        ]);
+
+        return $token;
+    }
+
+    public function generateUrlForProf(Prof $prof, string $purpose): string
+    {
+        $token = $this->createForProf($prof, $purpose);
+
+        return $this->baseUrl() . "/magic/profV3/{$purpose}?t={$token}";
     }
 
     public function getTabForPurpose(string $purpose): string

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { apiFetch, getUser, setAuthData, clearAuthData, recordActivity, getLastActivityTime, unlock, fetchNotifications, testPushNotification } from './api';
+import { apiFetch, getUser, getSessionUser, setAuthData, clearAuthData, recordActivity, getLastActivityTime, unlock, fetchNotifications, testPushNotification } from './api';
 import { initFirebaseMessaging, requestPushPermission, onForegroundMessage } from './firebase';
 import { ScreenType, ProfData, Classe, Matiere, Evaluation, EleveClasse } from './types';
 
@@ -19,7 +19,70 @@ import { PresencesScreen } from './components/screens/PresencesScreen';
 import { MessagingScreen } from './components/screens/MessagingScreen';
 import { CreateRemarkScreen } from './components/screens/CreateRemarkScreen';
 
+function parseMagicToken(): { purpose: string; token: string } | null {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('t');
+  if (token && /^[a-f0-9]{64}$/i.test(token)) {
+    const pathParts = window.location.pathname.split('/');
+    const purpose = pathParts[pathParts.length - 1] || 'dashboard';
+    return { purpose, token };
+  }
+  return null;
+}
+
+function MagicConsumeScreen({ purpose, token }: { purpose: string; token: string }) {
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/v1/magic/consume', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ token }),
+        });
+        const json = await res.json();
+        if (cancelled) return;
+
+        if (!res.ok || !json.success) {
+          setError(json.message || 'Lien invalide ou expire.');
+          return;
+        }
+
+        window.location.replace(window.location.pathname);
+      } catch {
+        if (!cancelled) setError('Erreur. Reessayez.');
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [token, purpose]);
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#f8f7ff] flex items-center justify-center p-6">
+        <div className="text-center space-y-4">
+          <svg className="w-12 h-12 text-rose-400 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+          <p className="text-sm text-gray-600">{error}</p>
+          <p className="text-xs text-gray-400">Demandez un nouveau lien via WhatsApp.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#f8f7ff] flex items-center justify-center">
+      <div className="text-center space-y-3">
+        <div className="w-8 h-8 border-2 border-navy-400 border-t-transparent rounded-full animate-spin mx-auto" />
+        <p className="text-sm text-gray-400">Connexion...</p>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
+  const magicLink = parseMagicToken();
   const [isLoggedIn, setIsLoggedIn] = useState(() => !!getUser());
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('dashboard');
   const [showPinModal, setShowPinModal] = useState(() => !!getUser());
@@ -73,6 +136,26 @@ export default function App() {
       }
     } catch {} finally { setLoading(false); }
   }, []);
+
+  // Check auth on mount (supports both localStorage and session-based magic link auth)
+  useEffect(() => {
+    if (magicLink) return;
+
+    const localUser = getUser();
+    if (localUser) {
+      setIsLoggedIn(true);
+      return;
+    }
+
+    // Check session auth (magic link)
+    getSessionUser().then(user => {
+      if (user) {
+        setAuthData(user);
+        setIsLoggedIn(true);
+      }
+      setLoading(false);
+    });
+  }, [magicLink]);
 
   useEffect(() => { if (isLoggedIn) loadDashboardData(); }, [isLoggedIn]);
 
@@ -187,6 +270,11 @@ export default function App() {
   };
 
   const filteredEvaluations = selectedClasse ? evaluations.filter(e => e.classe?.id === selectedClasse.id) : evaluations;
+
+  // Magic link: consume token and reload
+  if (magicLink) {
+    return <MagicConsumeScreen purpose={magicLink.purpose} token={magicLink.token} />;
+  }
 
   if (!isLoggedIn) return <LoginScreen onLoginSuccess={() => { setIsLoggedIn(true); setLoading(true); }} />;
 

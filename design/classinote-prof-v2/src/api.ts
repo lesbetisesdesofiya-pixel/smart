@@ -7,6 +7,23 @@ export function getUser(): any {
   return user ? JSON.parse(user) : null;
 }
 
+export async function getSessionUser(): Promise<any> {
+  try {
+    const res = await fetch(`${API_BASE}/auth/me`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Accept': 'application/json' },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.authenticated && data.type === 'prof') {
+        return { type: 'prof', id: data.user.id, nom_complet: data.user.nom_complet };
+      }
+    }
+  } catch {}
+  return null;
+}
+
 export function setAuthData(user: any): void {
   localStorage.setItem('classinote_prof_user', JSON.stringify(user));
 }
