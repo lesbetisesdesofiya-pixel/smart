@@ -13,6 +13,7 @@ class ParentDashboardController extends Controller
 {
     public function dashboard(Request $request): JsonResponse
     {
+        try {
         // Support both Sanctum token and session (magic link) auth
         $parent = Auth::guard('parent')->user();
         if (!$parent) {
@@ -159,6 +160,13 @@ class ParentDashboardController extends Controller
             'derniere_note' => $derniereNote,
             'dernier_avis' => $dernierAvis,
         ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Erreur serveur',
+                'error' => $e->getMessage(),
+                'file' => basename($e->getFile()) . ':' . $e->getLine(),
+            ], 500);
+        }
     }
 
     private function resolveAnneeScolaire(ParentModel $parent): ?AnneeScolaire
