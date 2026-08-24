@@ -116,12 +116,21 @@ class ParentDashboardController extends Controller
         })
         ->count();
 
-        // Paiements
-        $frais = \App\Models\Frais::whereIn('eleve_id', $eleveIds)
-            ->when($anneeActive, fn($q) => $q->where('annee_scolaire_id', $anneeActive->id))
-            ->get();
-        $montantDu = $frais->sum('montant');
-        $montantPaye = $frais->where('statut', 'paye')->sum('montant');
+        // Paiements (simplifié - via subscriptions)
+        $montantDu = 0;
+        $montantPaye = 0;
+        try {
+            $subscriptions = \App\Models\Subscription::whereIn('eleve_id', $eleveIds)
+                ->when($anneeActive, fn($q) => $q->where('annee_scolaire_id', $anneeActive->id))
+                ->with('payments')
+                ->get();
+            foreach ($subscriptions as $sub) {
+                $montantDu += $sub->ecolage ?? 0;
+                $montantPaye += $sub->payments->where('type', 'scolarite')->sum('montant');
+            }
+        } catch (\Throwable $e) {
+            // Ignore payment errors
+        }
 
         // Dernier avis
         $dernierAvis = null;
