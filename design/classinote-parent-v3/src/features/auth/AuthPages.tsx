@@ -33,8 +33,8 @@ export const MagicConsumePage: React.FC<MagicConsumePageProps> = ({ onSuccess })
       headers: { Accept: 'application/json' },
     }).then(res => res.json()).then(data => {
       if (data.authenticated) {
-        // Déjà connecté → rediriger
-        window.location.replace(window.location.pathname);
+        // Déjà connecté → recharger sans le token
+        window.location.href = window.location.pathname;
         return;
       }
 
@@ -51,7 +51,10 @@ export const MagicConsumePage: React.FC<MagicConsumePageProps> = ({ onSuccess })
           return;
         }
         setDone(true);
-        setTimeout(() => onSuccess(), 1500);
+        // Recharger la page sans le token dans l'URL
+        setTimeout(() => {
+          window.location.href = window.location.pathname;
+        }, 1000);
       }).catch(() => {
         if (!cancelled) setError('Erreur. Réessayez.');
       });

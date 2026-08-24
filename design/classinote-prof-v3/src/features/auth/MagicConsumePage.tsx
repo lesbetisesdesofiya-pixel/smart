@@ -42,8 +42,8 @@ export const MagicConsumePage: React.FC<MagicConsumePageProps> = ({ onSuccess })
       headers: { Accept: 'application/json' },
     }).then(res => res.json()).then(data => {
       if (data.authenticated) {
-        // Déjà connecté → rediriger directement
-        window.location.replace(window.location.pathname);
+        // Déjà connecté → recharger sans le token
+        window.location.href = window.location.pathname;
         return;
       }
 
@@ -69,16 +69,16 @@ export const MagicConsumePage: React.FC<MagicConsumePageProps> = ({ onSuccess })
             headers: { Accept: 'application/json' },
           }).then(r => r.json()).then(deviceData => {
             if (deviceData.trusted) {
-              // Appareil déjà enregistré → rediriger
-              window.location.replace(window.location.pathname);
+              // Appareil déjà enregistré → recharger
+              window.location.href = window.location.pathname;
             } else {
               // Premier fois → demander PIN
               setStep('set-pin');
             }
           }).catch(() => setStep('set-pin'));
         } else {
-          // Parent → rediriger directement
-          window.location.replace(window.location.pathname);
+          // Parent → recharger
+          window.location.href = window.location.pathname;
         }
       }).catch(() => {
         if (!cancelled) {
