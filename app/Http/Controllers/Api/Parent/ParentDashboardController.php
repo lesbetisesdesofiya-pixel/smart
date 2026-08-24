@@ -106,6 +106,28 @@ class ParentDashboardController extends Controller
             $paiements = $subscriptions->flatMap(fn($sub) => $sub->payments->map(fn($p) => ['id' => $p->id, 'libelle' => $p->type ?? 'Paiement', 'montant' => $p->montant, 'date' => $p->created_at?->format('Y-m-d'), 'statut' => 'paye']))->values()->toArray();
 
             $emploi = [];
+            try {
+                $emploi = \App\Models\EmploiDuTemps::whereIn('classe_id', function ($q) use ($eleveIds) {
+                    $q->select('classe_id')->from('eleves')->whereIn('id', $eleveIds);
+                })
+                ->when($anneeActive, fn($q) => $q->where('annee_scolaire_id', $anneeActive->id))
+                ->with('matiere', 'prof')
+                ->orderBy('jour')
+                ->orderBy('heure_debut')
+                ->get()
+                ->map(fn($e) => [
+                    'id' => $e->id,
+                    'jour' => $e->jour,
+                    'heure' => $e->heure_debut,
+                    'debut' => $e->heure_debut,
+                    'fin' => $e->heure_fin,
+                    'matiere' => $e->matiere?->libelle ?? 'Cours',
+                    'prof' => $e->prof ? trim($e->prof->prenom . ' ' . $e->prof->nom) : null,
+                    'salle' => $e->salle,
+                    'classe' => $e->classe?->libelle,
+                ])
+                ->toArray();
+            } catch (\Throwable $e) {}
 
             return response()->json([
                 'parent' => ['nom_complet' => trim($parent->prenom . ' ' . $parent->nom)],
