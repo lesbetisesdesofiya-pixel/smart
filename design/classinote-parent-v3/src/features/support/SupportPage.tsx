@@ -1,22 +1,22 @@
 import React, { useState } from 'react'
 import { Card } from '@/shared/components/ui/Card'
 import { useDashboard } from '@/shared/stores/stores'
-import { HelpCircle, Send, ChevronDown, CheckCircle, Bug, Lightbulb, MessageSquare } from 'lucide-react'
+import { Send, ChevronDown, CheckCircle, Bug, Lightbulb, MessageSquare } from 'lucide-react'
 
 type TicketType = 'bug' | 'suggestion' | 'avis'
 
-const ticketTypes: { key: TicketType; label: string; icon: React.ReactNode }[] = [
-  { key: 'bug', label: 'Bug', icon: <Bug className="w-4 h-4" /> },
-  { key: 'suggestion', label: 'Suggestion', icon: <Lightbulb className="w-4 h-4" /> },
-  { key: 'avis', label: 'Avis', icon: <MessageSquare className="w-4 h-4" /> },
+const ticketTypes: { key: TicketType; label: string; Icon: typeof Bug }[] = [
+  { key: 'bug', label: 'Bug', Icon: Bug },
+  { key: 'suggestion', label: 'Suggestion', Icon: Lightbulb },
+  { key: 'avis', label: 'Avis', Icon: MessageSquare },
 ]
 
 const faqItems = [
-  { q: 'Comment consulter les notes de mon enfant ?', a: 'Rendez-vous dans la section Notes depuis le menu principal. Vous y trouverez toutes les notes par matière et par trimestre.' },
-  { q: 'Comment signaler une absence ?', a: 'Contactez directement l\'établissement via la section Messages ou envoyez un justificatif via le formulaire de support.' },
-  { q: 'Les paiements sont-ils sécurisés ?', a: 'Oui, toutes les transactions sont sécurisées et chiffrées. Vous pouvez suivre vos paiements dans la section dédiée.' },
-  { q: 'Comment contacter un professeur ?', a: 'Utilisez la section Messages pour envoyer un message direct au professeur concerné.' },
-  { q: 'Puis-je modifier mes informations ?', a: 'Les informations de l\'élève sont gérées par l\'établissement. Contactez-les pour toute modification.' },
+  { q: 'Comment consulter les notes de mon enfant ?', a: "Rendez-vous dans la section Notes depuis le menu principal. Vous y trouverez toutes les notes par matiere et par trimestre." },
+  { q: 'Comment signaler une absence ?', a: "Contactez directement l'etablissement via la section Messages ou envoyez un justificatif via le formulaire de support." },
+  { q: 'Les paiements sont-ils securises ?', a: 'Oui, toutes les transactions sont securisees et chiffrees. Vous pouvez suivre vos paiements dans la section dediee.' },
+  { q: 'Comment contacter un professeur ?', a: 'Utilisez la section Messages pour envoyer un message direct au professeur concerne.' },
+  { q: 'Puis-je modifier mes informations ?', a: "Les informations de l'eleve sont gerees par l'etablissement. Contactez-les pour toute modification." },
 ]
 
 export const SupportPage: React.FC = () => {
@@ -33,23 +33,30 @@ export const SupportPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 space-y-6 max-w-2xl mx-auto">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold text-navy-800 font-inter">Support</h1>
-        <p className="text-gray-500 text-sm">Nous sommes là pour vous aider</p>
+    <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 672, margin: '0 auto' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: '#0a1642' }}>Support</h1>
+        <p style={{ color: '#6b7280', fontSize: 14 }}>Nous sommes la pour vous aider</p>
       </div>
 
-      <Card className="p-6 rounded-3xl shadow-card space-y-5">
-        <h2 className="text-lg font-semibold text-navy-800">Nous contacter</h2>
+      <Card style={{ padding: 24, borderRadius: 24, boxShadow: '0 4px 24px rgba(0,35,102,0.06)', display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <h2 style={{ fontSize: 18, fontWeight: 600, color: '#0a1642' }}>Nous contacter</h2>
 
-        <div className="flex gap-2">
+        <div style={{ display: 'flex', gap: 8 }}>
           {ticketTypes.map(t => (
             <button
               key={t.key}
               onClick={() => setTicketType(t.key)}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-medium transition-all ${ticketType === t.key ? 'bg-navy-800 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+              style={{
+                flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                padding: '12px 0', borderRadius: 16, fontSize: 14, fontWeight: 500, cursor: 'pointer', transition: 'all 0.2s',
+                background: ticketType === t.key ? '#0a1642' : '#f3f4f6',
+                color: ticketType === t.key ? '#fff' : '#4b5563',
+                boxShadow: ticketType === t.key ? '0 4px 12px rgba(10,22,66,0.3)' : 'none',
+                border: 'none',
+              }}
             >
-              {t.icon}
+              <t.Icon size={16} />
               {t.label}
             </button>
           ))}
@@ -58,44 +65,62 @@ export const SupportPage: React.FC = () => {
         <textarea
           value={message}
           onChange={e => setMessage(e.target.value)}
-          placeholder="Décrivez votre demande..."
+          placeholder="Decrivez votre demande..."
           rows={5}
-          className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-200 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-navy-800/20 focus:border-navy-800/30 transition-all"
+          style={{
+            width: '100%', paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12,
+            borderRadius: 16, background: '#f9fafb', border: '1px solid #e5e7eb', fontSize: 14,
+            resize: 'none', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
+          }}
         />
 
         <button
           onClick={handleSend}
           disabled={!message.trim()}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-navy-800 text-white font-medium disabled:opacity-40 hover:bg-navy-700 transition-colors"
+          style={{
+            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            padding: '12px 0', borderRadius: 16, background: '#0a1642', color: '#fff',
+            fontWeight: 500, cursor: 'pointer', border: 'none', opacity: !message.trim() ? 0.4 : 1,
+            transition: 'all 0.2s',
+          }}
         >
           {sent ? (
             <>
-              <CheckCircle className="w-5 h-5" />
-              Envoyé !
+              <CheckCircle size={20} />
+              Envoye !
             </>
           ) : (
             <>
-              <Send className="w-5 h-5" />
+              <Send size={20} />
               Envoyer
             </>
           )}
         </button>
       </Card>
 
-      <div className="space-y-3">
-        <h2 className="text-lg font-semibold text-navy-800">Questions fréquentes</h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <h2 style={{ fontSize: 18, fontWeight: 600, color: '#0a1642' }}>Questions frequentes</h2>
         {faqItems.map((item, i) => (
-          <Card key={i} className="rounded-3xl shadow-card overflow-hidden">
+          <Card key={i} style={{ borderRadius: 24, boxShadow: '0 4px 24px rgba(0,35,102,0.06)', overflow: 'hidden', padding: 0 }}>
             <button
               onClick={() => setOpenFaq(openFaq === i ? null : i)}
-              className="w-full p-5 flex items-center justify-between text-left"
+              style={{
+                width: '100%', padding: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer',
+              }}
             >
-              <span className="font-medium text-navy-800 text-sm pr-4">{item.q}</span>
-              <ChevronDown className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform ${openFaq === i ? 'rotate-180' : ''}`} />
+              <span style={{ fontWeight: 500, color: '#0a1642', fontSize: 14, paddingRight: 16 }}>{item.q}</span>
+              <ChevronDown
+                size={20}
+                style={{
+                  color: '#9ca3af', flexShrink: 0, transition: 'transform 0.2s',
+                  transform: openFaq === i ? 'rotate(180deg)' : 'rotate(0deg)',
+                }}
+              />
             </button>
             {openFaq === i && (
-              <div className="px-5 pb-5">
-                <p className="text-sm text-gray-600 leading-relaxed">{item.a}</p>
+              <div style={{ paddingLeft: 20, paddingRight: 20, paddingBottom: 20 }}>
+                <p style={{ fontSize: 14, color: '#4b5563', lineHeight: 1.6 }}>{item.a}</p>
               </div>
             )}
           </Card>

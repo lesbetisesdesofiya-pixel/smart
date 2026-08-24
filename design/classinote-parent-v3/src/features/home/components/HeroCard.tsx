@@ -21,16 +21,10 @@ export const HeroCard: React.FC<HeroCardProps> = ({ parentName, childName, prese
         </div>
         <div>
           <p style={{ fontSize: '14px', fontWeight: 700 }}>{childName}</p>
-          <p style={{ fontSize: '12px', color: 'rgba(191,219,254,0.7)' }}>
-            {present ? "Présent(e) aujourd'hui" : "Absent(e) aujourd'hui"}
-          </p>
+          <p style={{ fontSize: '12px', color: 'rgba(191,219,254,0.7)' }}>{present ? "Présent(e) aujourd'hui" : "Absent(e) aujourd'hui"}</p>
         </div>
       </div>
-      {prochainCours && (
-        <p style={{ fontSize: '12px', color: 'rgba(191,219,254,0.6)', marginTop: '12px' }}>
-          Prochain : {prochainCours.matiere} à {prochainCours.heure}
-        </p>
-      )}
+      {prochainCours && <p style={{ fontSize: '12px', color: 'rgba(191,219,254,0.6)', marginTop: '12px' }}>Prochain : {prochainCours.matiere} à {prochainCours.heure}</p>}
     </div>
   </Card>
 );
@@ -43,27 +37,16 @@ interface ChildSelectorProps {
 
 export const ChildSelector: React.FC<ChildSelectorProps> = ({ enfants, activeId, onSelect }) => {
   if (enfants.length <= 1) return null;
-
   return (
     <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }} className="no-scrollbar">
       {enfants.map((child) => (
-        <button
-          key={child.id}
-          onClick={() => onSelect(child.id)}
-          style={{
-            flexShrink: 0,
-            padding: '8px 16px',
-            borderRadius: '16px',
-            fontSize: '12px',
-            fontWeight: 700,
-            cursor: 'pointer',
-            border: child.id === activeId ? 'none' : '1px solid #f3f4f6',
-            background: child.id === activeId ? '#002366' : '#ffffff',
-            color: child.id === activeId ? '#ffffff' : '#2a4386',
-            boxShadow: child.id === activeId ? '0 4px 12px rgba(0,35,102,0.2)' : '0 1px 3px rgba(0,0,0,0.05)',
-            transition: 'all 0.2s ease',
-          }}
-        >
+        <button key={child.id} onClick={() => onSelect(child.id)} style={{
+          flexShrink: 0, padding: '8px 16px', borderRadius: '16px', fontSize: '12px', fontWeight: 700, cursor: 'pointer',
+          border: child.id === activeId ? 'none' : '1px solid #f3f4f6',
+          background: child.id === activeId ? '#002366' : '#ffffff',
+          color: child.id === activeId ? '#ffffff' : '#2a4386',
+          boxShadow: child.id === activeId ? '0 4px 12px rgba(0,35,102,0.2)' : '0 1px 3px rgba(0,0,0,0.05)',
+        }}>
           {child.nom.split(' ')[0]}{child.classe && <span style={{ opacity: 0.6, marginLeft: '4px' }}>({child.classe})</span>}
         </button>
       ))}

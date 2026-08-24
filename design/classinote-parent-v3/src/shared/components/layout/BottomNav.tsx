@@ -7,30 +7,30 @@ interface BottomNavProps {
 }
 
 const tabs = [
-  { id: 'accueil', label: 'Accueil', icon: Home },
-  { id: 'notes', label: 'Notes', icon: GraduationCap },
-  { id: 'examens', label: 'Examens', icon: CalendarDays },
-  { id: 'messages', label: 'Messages', icon: MessageCircle },
-  { id: 'paiements', label: 'Paiements', icon: CreditCard },
+  { id: 'accueil', label: 'Accueil', Icon: Home },
+  { id: 'notes', label: 'Notes', Icon: GraduationCap },
+  { id: 'examens', label: 'Examens', Icon: CalendarDays },
+  { id: 'messages', label: 'Messages', Icon: MessageCircle },
+  { id: 'paiements', label: 'Paiements', Icon: CreditCard },
 ];
 
 export const BottomNav: React.FC<BottomNavProps> = ({ tab, onNavigate }) => (
-  <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-2xl border-t border-gray-100/50 safe-area-pb">
-    <div className="flex justify-around items-center px-1 py-1.5 max-w-lg mx-auto">
+  <nav style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(20px)', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', padding: '6px 4px', maxWidth: '512px', margin: '0 auto', paddingBottom: 'env(safe-area-inset-bottom, 6px)' }}>
       {tabs.map((t) => {
         const active = tab === t.id;
         return (
           <button
             key={t.id}
             onClick={() => onNavigate(t.id)}
-            className={`flex flex-col items-center px-3 py-1.5 rounded-2xl transition-all cursor-pointer relative
-              ${active ? 'text-navy-800' : 'text-gray-400'}`}
+            style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '6px 12px', borderRadius: '16px', border: 'none', cursor: 'pointer', transition: 'all 0.2s ease',
+              background: active ? '#eef2ff' : 'transparent',
+              color: active ? '#002366' : '#9ca3af',
+            }}
           >
-            {active && (
-              <div className="absolute inset-0 bg-navy-50 rounded-2xl" />
-            )}
-            <t.icon className={`w-5 h-5 relative z-10 ${active ? 'text-navy-800' : 'text-gray-400'}`} strokeWidth={active ? 2.5 : 2} />
-            <span className={`text-[10px] mt-0.5 relative z-10 ${active ? 'font-bold' : 'font-medium'}`}>{t.label}</span>
+            <t.Icon size={20} strokeWidth={active ? 2.5 : 2} style={{ marginBottom: '2px' }} />
+            <span style={{ fontSize: '10px', fontWeight: active ? 700 : 500 }}>{t.label}</span>
           </button>
         );
       })}

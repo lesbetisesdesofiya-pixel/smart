@@ -1,9 +1,8 @@
 import React, { useState } from 'react'
 import { Card } from '@/shared/components/ui/Card'
 import { Badge } from '@/shared/components/ui/Badge'
-import { EmptyState, ErrorState } from '@/shared/components/ui/Feedback'
-import { useDashboard } from '@/shared/stores/stores'
 import { BookOpen, Calendar, Clock, X, Filter } from 'lucide-react'
+import { useDashboard } from '@/shared/stores/stores'
 
 type FilterType = 'all' | 'upcoming' | 'past'
 
@@ -12,9 +11,30 @@ export const ExamsPage: React.FC = () => {
   const [filter, setFilter] = useState<FilterType>('all')
   const [selectedExam, setSelectedExam] = useState<any>(null)
 
-  if (isLoading) return <div className="p-6 animate-pulse space-y-4">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-32 bg-gray-100 rounded-3xl" />)}</div>
-  if (error) return <ErrorState message="Impossible de charger les examens" />
-  if (!data?.examens?.length) return <EmptyState icon={<BookOpen className="w-12 h-12" />} title="Aucun examen" description="Aucun examen prévu pour le moment" />
+  if (isLoading)
+    return (
+      <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} style={{ height: 128, background: '#f3f4f6', borderRadius: 24 }} />
+        ))}
+      </div>
+    )
+
+  if (error)
+    return (
+      <div style={{ textAlign: 'center', padding: 48 }}>
+        <p style={{ fontSize: 14, color: '#ef4444' }}>Impossible de charger les examens</p>
+      </div>
+    )
+
+  if (!data?.examens?.length)
+    return (
+      <div style={{ textAlign: 'center', padding: 48 }}>
+        <BookOpen size={48} style={{ margin: '0 auto 12px', color: '#9ca3af' }} />
+        <p style={{ fontSize: 16, fontWeight: 600, color: '#111827' }}>Aucun examen</p>
+        <p style={{ fontSize: 14, color: '#6b7280' }}>Aucun examen prévu pour le moment</p>
+      </div>
+    )
 
   const now = new Date()
   const filtered = data.examens.filter((exam: any) => {
@@ -31,18 +51,25 @@ export const ExamsPage: React.FC = () => {
   ]
 
   return (
-    <div className="p-6 space-y-6 max-w-2xl mx-auto">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold text-navy-800 font-inter">Examens</h1>
-        <p className="text-gray-500 text-sm">{data.examens.length} examen{data.examens.length > 1 ? 's' : ''} au total</p>
+    <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 672, margin: '0 auto' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: '#0a1642' }}>Examens</h1>
+        <p style={{ color: '#6b7280', fontSize: 14 }}>{data.examens.length} examen{data.examens.length > 1 ? 's' : ''} au total</p>
       </div>
 
-      <div className="flex gap-2">
+      <div style={{ display: 'flex', gap: 8 }}>
         {filters.map(f => (
           <button
             key={f.key}
             onClick={() => setFilter(f.key)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${filter === f.key ? 'bg-navy-800 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+            style={{
+              paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8, borderRadius: 9999,
+              fontSize: 14, fontWeight: 500, cursor: 'pointer', transition: 'all 0.2s',
+              background: filter === f.key ? '#0a1642' : '#f3f4f6',
+              color: filter === f.key ? '#fff' : '#4b5563',
+              boxShadow: filter === f.key ? '0 4px 12px rgba(10,22,66,0.3)' : 'none',
+              border: 'none',
+            }}
           >
             {f.label}
           </button>
@@ -50,85 +77,87 @@ export const ExamsPage: React.FC = () => {
       </div>
 
       {filtered.length === 0 ? (
-        <EmptyState icon={<Filter className="w-10 h-10" />} title="Aucun résultat" description={`Aucun examen ${filter === 'upcoming' ? 'à venir' : filter === 'past' ? 'passé' : ''}`} />
+        <div style={{ textAlign: 'center', padding: 48 }}>
+          <Filter size={40} style={{ margin: '0 auto 12px', color: '#9ca3af' }} />
+          <p style={{ fontSize: 16, fontWeight: 600, color: '#111827' }}>Aucun résultat</p>
+          <p style={{ fontSize: 14, color: '#6b7280' }}>Aucun examen {filter === 'upcoming' ? 'à venir' : filter === 'past' ? 'passé' : ''}</p>
+        </div>
       ) : (
-        <div className="space-y-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {filtered.map((exam: any, i: number) => (
             <Card
               key={i}
-              className="p-5 rounded-3xl shadow-card cursor-pointer hover:shadow-lg transition-shadow"
+              style={{ padding: 20, borderRadius: 24, boxShadow: '0 4px 24px rgba(0,35,102,0.06)', cursor: 'pointer' }}
               onClick={() => setSelectedExam(exam)}
             >
-              <div className="flex items-start justify-between">
-                <div className="flex-1 space-y-2">
-                  <h3 className="font-semibold text-navy-800 text-lg">{exam.matiere?.libelle || exam.titre}</h3>
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <h3 style={{ fontWeight: 600, color: '#0a1642', fontSize: 18 }}>{exam.matiere?.libelle || exam.titre}</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: 14, color: '#6b7280' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <Calendar size={16} />
                       {new Date(exam.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </span>
                     {exam.heure && (
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <Clock size={16} />
                         {exam.heure}
                       </span>
                     )}
                   </div>
                 </div>
                 {exam.coefficient && (
-                  <Badge color="navy" size="md" className="ml-3">
-                    Coeff. {exam.coefficient}
-                  </Badge>
+                  <Badge color="navy" size="md">Coeff. {exam.coefficient}</Badge>
                 )}
               </div>
-              {exam.salle && <p className="mt-2 text-sm text-gray-400">Salle : {exam.salle}</p>}
+              {exam.salle && <p style={{ marginTop: 8, fontSize: 14, color: '#9ca3af' }}>Salle : {exam.salle}</p>}
             </Card>
           ))}
         </div>
       )}
 
       {selectedExam && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end justify-center" onClick={() => setSelectedExam(null)}>
-          <div className="bg-white rounded-t-3xl w-full max-w-lg p-6 space-y-4 animate-slide-up" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-navy-800">{selectedExam.matiere?.libelle || selectedExam.titre}</h2>
-              <button onClick={() => setSelectedExam(null)} className="p-2 rounded-full hover:bg-gray-100">
-                <X className="w-5 h-5" />
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }} onClick={() => setSelectedExam(null)}>
+          <div style={{ background: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, width: '100%', maxWidth: 512, padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h2 style={{ fontSize: 20, fontWeight: 700, color: '#0a1642' }}>{selectedExam.matiere?.libelle || selectedExam.titre}</h2>
+              <button onClick={() => setSelectedExam(null)} style={{ padding: 8, borderRadius: 9999, background: 'transparent', border: 'none', cursor: 'pointer' }}>
+                <X size={20} />
               </button>
             </div>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-500">Date</span>
-                <span className="font-medium text-navy-800">{new Date(selectedExam.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 14 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f3f4f6' }}>
+                <span style={{ color: '#6b7280' }}>Date</span>
+                <span style={{ fontWeight: 500, color: '#0a1642' }}>{new Date(selectedExam.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
               </div>
               {selectedExam.heure && (
-                <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-500">Heure</span>
-                  <span className="font-medium text-navy-800">{selectedExam.heure}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f3f4f6' }}>
+                  <span style={{ color: '#6b7280' }}>Heure</span>
+                  <span style={{ fontWeight: 500, color: '#0a1642' }}>{selectedExam.heure}</span>
                 </div>
               )}
               {selectedExam.salle && (
-                <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-500">Salle</span>
-                  <span className="font-medium text-navy-800">{selectedExam.salle}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f3f4f6' }}>
+                  <span style={{ color: '#6b7280' }}>Salle</span>
+                  <span style={{ fontWeight: 500, color: '#0a1642' }}>{selectedExam.salle}</span>
                 </div>
               )}
               {selectedExam.coefficient && (
-                <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-500">Coefficient</span>
-                  <span className="font-medium text-navy-800">{selectedExam.coefficient}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f3f4f6' }}>
+                  <span style={{ color: '#6b7280' }}>Coefficient</span>
+                  <span style={{ fontWeight: 500, color: '#0a1642' }}>{selectedExam.coefficient}</span>
                 </div>
               )}
               {selectedExam.prof && (
-                <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-500">Professeur</span>
-                  <span className="font-medium text-navy-800">{selectedExam.prof}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f3f4f6' }}>
+                  <span style={{ color: '#6b7280' }}>Professeur</span>
+                  <span style={{ fontWeight: 500, color: '#0a1642' }}>{selectedExam.prof}</span>
                 </div>
               )}
               {selectedExam.description && (
-                <div className="pt-2">
-                  <span className="text-gray-500 block mb-1">Description</span>
-                  <p className="text-navy-800">{selectedExam.description}</p>
+                <div style={{ paddingTop: 8 }}>
+                  <span style={{ color: '#6b7280', display: 'block', marginBottom: 4 }}>Description</span>
+                  <p style={{ color: '#0a1642' }}>{selectedExam.description}</p>
                 </div>
               )}
             </div>

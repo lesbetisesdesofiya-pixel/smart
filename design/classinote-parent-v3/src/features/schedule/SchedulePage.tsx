@@ -1,8 +1,7 @@
 import React, { useState } from 'react'
 import { Card } from '@/shared/components/ui/Card'
-import { EmptyState, ErrorState } from '@/shared/components/ui/Feedback'
-import { useDashboard } from '@/shared/stores/stores'
 import { Clock, MapPin, User, CalendarDays } from 'lucide-react'
+import { useDashboard } from '@/shared/stores/stores'
 
 const days = [
   { key: 'lun', label: 'Lun' },
@@ -20,25 +19,45 @@ export const SchedulePage: React.FC = () => {
   const dayMap = [6, 0, 1, 2, 3, 4, 5]
   const [selectedDay, setSelectedDay] = useState(days[dayMap[today]]?.key || 'lun')
 
-  if (isLoading) return <div className="p-6 animate-pulse space-y-4">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-24 bg-gray-100 rounded-3xl" />)}</div>
-  if (error) return <ErrorState message="Impossible de charger l'emploi du temps" />
+  if (isLoading)
+    return (
+      <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} style={{ height: 96, background: '#f3f4f6', borderRadius: 24 }} />
+        ))}
+      </div>
+    )
+
+  if (error)
+    return (
+      <div style={{ textAlign: 'center', padding: 48 }}>
+        <p style={{ fontSize: 14, color: '#ef4444' }}>Impossible de charger l'emploi du temps</p>
+      </div>
+    )
 
   const emploi = data?.emploi ?? []
   const daySchedule = emploi.filter((c: any) => c.jour === selectedDay || c.day === selectedDay)
 
   return (
-    <div className="p-6 space-y-6 max-w-2xl mx-auto">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold text-navy-800 font-inter">Emploi du temps</h1>
-        <p className="text-gray-500 text-sm">Planning de la semaine</p>
+    <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 672, margin: '0 auto' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: '#0a1642' }}>Emploi du temps</h1>
+        <p style={{ color: '#6b7280', fontSize: 14 }}>Planning de la semaine</p>
       </div>
 
-      <div className="flex gap-2">
+      <div style={{ display: 'flex', gap: 8 }}>
         {days.map(d => (
           <button
             key={d.key}
             onClick={() => setSelectedDay(d.key)}
-            className={`flex-1 py-3 rounded-2xl text-sm font-medium transition-all text-center ${selectedDay === d.key ? 'bg-navy-800 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+            style={{
+              flex: 1, paddingTop: 12, paddingBottom: 12, borderRadius: 16,
+              fontSize: 14, fontWeight: 500, cursor: 'pointer', transition: 'all 0.2s', textAlign: 'center',
+              background: selectedDay === d.key ? '#0a1642' : '#f3f4f6',
+              color: selectedDay === d.key ? '#fff' : '#4b5563',
+              boxShadow: selectedDay === d.key ? '0 4px 12px rgba(10,22,66,0.3)' : 'none',
+              border: 'none',
+            }}
           >
             {d.label}
           </button>
@@ -46,31 +65,39 @@ export const SchedulePage: React.FC = () => {
       </div>
 
       {emploi.length === 0 ? (
-        <EmptyState icon={<CalendarDays className="w-12 h-12" />} title="Aucun cours" description="Pas d'emploi du temps disponible" />
+        <div style={{ textAlign: 'center', padding: 48 }}>
+          <CalendarDays size={48} style={{ margin: '0 auto 12px', color: '#9ca3af' }} />
+          <p style={{ fontSize: 16, fontWeight: 600, color: '#111827' }}>Aucun cours</p>
+          <p style={{ fontSize: 14, color: '#6b7280' }}>Pas d'emploi du temps disponible</p>
+        </div>
       ) : daySchedule.length === 0 ? (
-        <EmptyState icon={<CalendarDays className="w-10 h-10" />} title="Journée libre" description="Aucun cours prévu ce jour" />
+        <div style={{ textAlign: 'center', padding: 48 }}>
+          <CalendarDays size={40} style={{ margin: '0 auto 12px', color: '#9ca3af' }} />
+          <p style={{ fontSize: 16, fontWeight: 600, color: '#111827' }}>Journee libre</p>
+          <p style={{ fontSize: 14, color: '#6b7280' }}>Aucun cours prevu ce jour</p>
+        </div>
       ) : (
-        <div className="space-y-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {daySchedule.map((cours: any, i: number) => (
-            <Card key={i} className="p-5 rounded-3xl shadow-card">
-              <div className="flex items-start gap-4">
-                <div className="flex flex-col items-center min-w-[60px]">
-                  <span className="text-lg font-bold text-navy-800">{cours.heure || cours.debut || '—'}</span>
-                  {cours.fin && <span className="text-xs text-gray-400">à {cours.fin}</span>}
+            <Card key={i} style={{ padding: 20, borderRadius: 24, boxShadow: '0 4px 24px rgba(0,35,102,0.06)' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 60 }}>
+                  <span style={{ fontSize: 18, fontWeight: 700, color: '#0a1642' }}>{cours.heure || cours.debut || '---'}</span>
+                  {cours.fin && <span style={{ fontSize: 12, color: '#9ca3af' }}>a {cours.fin}</span>}
                 </div>
-                <div className="w-px h-12 bg-gray-200 self-center" />
-                <div className="flex-1 space-y-2">
-                  <h3 className="font-semibold text-navy-800 text-lg">{cours.matiere}</h3>
-                  <div className="flex flex-wrap gap-3 text-sm text-gray-500">
+                <div style={{ width: 1, height: 48, background: '#e5e7eb', alignSelf: 'center' }} />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <h3 style={{ fontWeight: 600, color: '#0a1642', fontSize: 18 }}>{cours.matiere}</h3>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, fontSize: 14, color: '#6b7280' }}>
                     {cours.prof && (
-                      <span className="flex items-center gap-1">
-                        <User className="w-4 h-4" />
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <User size={16} />
                         {cours.prof}
                       </span>
                     )}
                     {cours.salle && (
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-4 h-4" />
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <MapPin size={16} />
                         {cours.salle}
                       </span>
                     )}
