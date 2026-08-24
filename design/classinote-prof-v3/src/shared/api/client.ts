@@ -63,3 +63,25 @@ export async function unlock(pin: string) {
   });
   return res.json();
 }
+
+export async function checkDevice(): Promise<{ trusted: boolean; user_type?: string; user_id?: number }> {
+  try {
+    const res = await fetch('/api/v1/auth/device/check', {
+      method: 'GET',
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+    });
+    if (res.ok) return res.json();
+  } catch {}
+  return { trusted: false };
+}
+
+export async function pinLogin(pin: string) {
+  const res = await fetch('/api/v1/auth/device/pin-login', {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ pin }),
+  });
+  return res.json();
+}

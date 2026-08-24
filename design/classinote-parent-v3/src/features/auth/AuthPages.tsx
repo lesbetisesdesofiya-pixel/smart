@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { consumeMagicLink } from '@/shared/api/client';
-import { Link2, AlertCircle } from 'lucide-react';
+import { motion } from 'motion/react';
+import { Link2, AlertCircle, CheckCircle } from 'lucide-react';
 
 function parseMagicToken(): { purpose: string; token: string } | null {
   const params = new URLSearchParams(window.location.search);
@@ -13,21 +13,48 @@ function parseMagicToken(): { purpose: string; token: string } | null {
   return null;
 }
 
-export const MagicConsumePage: React.FC = () => {
+interface MagicConsumePageProps {
+  onSuccess: () => void;
+}
+
+export const MagicConsumePage: React.FC<MagicConsumePageProps> = ({ onSuccess }) => {
   const magic = parseMagicToken();
   const [error, setError] = useState('');
+  const [done, setDone] = useState(false);
 
   useEffect(() => {
     if (!magic) return;
     let cancelled = false;
 
-    consumeMagicLink(magic.token).then((json) => {
-      if (cancelled) return;
-      if (!json.success) {
-        setError(json.message || 'Lien invalide ou expiré.');
+    // D'abord vérifier si déjà connecté
+    fetch('/api/v1/auth/me', {
+      method: 'GET',
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+    }).then(res => res.json()).then(data => {
+      if (data.authenticated) {
+        // Déjà connecté → rediriger
+        window.location.replace(window.location.pathname);
         return;
       }
-      window.location.replace(window.location.pathname);
+
+      // Pas connecté → consommer le lien
+      fetch('/api/v1/magic/consume', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ token: magic.token }),
+      }).then(res => res.json()).then(json => {
+        if (cancelled) return;
+        if (!json.success) {
+          setError(json.message || 'Lien invalide ou expiré.');
+          return;
+        }
+        setDone(true);
+        setTimeout(() => onSuccess(), 1500);
+      }).catch(() => {
+        if (!cancelled) setError('Erreur. Réessayez.');
+      });
     }).catch(() => {
       if (!cancelled) setError('Erreur. Réessayez.');
     });
@@ -58,6 +85,18 @@ export const MagicConsumePage: React.FC = () => {
     );
   }
 
+  if (done) {
+    return (
+      <div className="min-h-screen bg-[#f8f9ff] flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto" />
+          <p className="text-sm font-bold text-gray-900">Connexion réussie !</p>
+          <p className="text-xs text-gray-400">Redirection...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#f8f9ff] flex items-center justify-center">
       <div className="text-center space-y-3">
@@ -70,7 +109,12 @@ export const MagicConsumePage: React.FC = () => {
 
 export const LandingPage: React.FC = () => (
   <div className="min-h-screen bg-gradient-to-br from-[#002366] to-[#0a1e3d] flex flex-col items-center justify-center p-6">
-    <div className="w-full max-w-sm space-y-8 text-center">
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className="w-full max-w-sm space-y-8 text-center"
+    >
       <div className="space-y-3">
         <div className="w-16 h-16 bg-white/15 rounded-2xl flex items-center justify-center mx-auto backdrop-blur-sm border border-white/10">
           <span className="text-2xl font-bold text-white">CN</span>
@@ -84,9 +128,12 @@ export const LandingPage: React.FC = () => (
           <h2 className="text-sm font-bold text-white">Lien d'accès requis</h2>
           <p className="text-xs text-blue-200/80 mt-2 leading-relaxed">
             Demandez un lien d'accès à l'administration de l'école via WhatsApp.
+            <br /><br />
+            Le lien sera utilisé une seule fois pour enregistrer votre appareil.
           </p>
         </div>
       </div>
-    </div>
+      <p className="text-xs text-blue-200/40">ClassiNote {new Date().getFullYear()}</p>
+    </motion.div>
   </div>
 );

@@ -68,6 +68,7 @@ Route::prefix('v1')->group(function () {
     Route::post('auth/device/login', [DeviceAuthController::class, 'login'])
         ->middleware('throttle:5,1');
     Route::get('auth/device/check', [DeviceAuthController::class, 'check']);
+    Route::post('auth/device/pin-login', [DeviceAuthController::class, 'pinLogin']);
     Route::post('auth/admin/pin/check', [AuthController::class, 'checkAdminPin'])
         ->middleware('throttle:10,1');
 

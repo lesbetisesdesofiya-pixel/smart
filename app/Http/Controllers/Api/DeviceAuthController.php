@@ -245,6 +245,67 @@ class DeviceAuthController extends Controller
         ]);
     }
 
+    /**
+     * Connexion par PIN seul (appareil déjà enregistré)
+     * POST /auth/device/pin-login
+     * Body: { pin }
+     */
+    public function pinLogin(Request $request): JsonResponse
+    {
+        $request->validate([
+            'pin' => 'required|string|min:4|max:6',
+        ]);
+
+        $deviceToken = $request->cookie('classinote_device');
+
+        if (!$deviceToken) {
+            return response()->json(['message' => 'Appareil non reconnu'], 401);
+        }
+
+        $device = TrustedDevice::where('device_token', $deviceToken)
+            ->where('expires_at', '>', now())
+            ->first();
+
+        if (!$device) {
+            return response()->json(['message' => 'Appareil expiré'], 401);
+        }
+
+        $user = null;
+        $type = $device->user_type;
+
+        if ($type === 'prof') {
+            $user = Prof::find($device->user_id);
+        } elseif ($type === 'parent') {
+            $user = ParentModel::find($device->user_id);
+        }
+
+        if (!$user) {
+            return response()->json(['message' => 'Utilisateur introuvable'], 404);
+        }
+
+        if (!$user->hasPin() || !$user->verifyPin($request->pin)) {
+            return response()->json(['message' => 'PIN incorrect'], 422);
+        }
+
+        // Mettre à jour l'appareil
+        $device->update([
+            'last_used_at' => now(),
+            'expires_at' => now()->addDays(180),
+        ]);
+
+        // Créer le token Sanctum
+        $sanctumToken = $user->createToken('device-auth')->plainTextToken;
+
+        $secure = env('SESSION_SECURE_COOKIE', true);
+
+        return response()->json([
+            'success' => true,
+            'type' => $type,
+            'user' => $this->getUserData($user, $type),
+        ])
+        ->withCookie(cookie('classinote_token', $sanctumToken, 60 * 24 * 180, '/', null, $secure, true, false, 'lax'));
+    }
+
     private function getUserData($user, string $type): array
     {
         if ($type === 'prof') {

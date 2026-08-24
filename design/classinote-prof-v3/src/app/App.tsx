@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { getSessionUser } from '@/shared/api/client';
+import { getSessionUser, checkDevice } from '@/shared/api/client';
 import { useAuthStore } from '@/shared/stores/authStore';
 import { Layout } from './Layout';
-import { LoginPage } from '@/features/auth/LoginPage';
+import { PinEntryScreen } from '@/features/auth/PinEntryScreen';
 import { MagicConsumePage } from '@/features/auth/MagicConsumePage';
+import { LandingPage } from '@/features/auth/LandingPage';
+import { PwaInstallBanner } from '@/shared/components/ui/PwaInstallBanner';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,24 +27,53 @@ function parseMagicToken(): boolean {
 function AppContent() {
   const { isAuthenticated, setAuth, clearAuth } = useAuthStore();
   const [loading, setLoading] = useState(true);
+  const [screen, setScreen] = useState<'loading' | 'magic' | 'pin' | 'landing' | 'dashboard'>('loading');
   const isMagicLink = parseMagicToken();
 
   useEffect(() => {
-    if (isMagicLink) return;
-
-    getSessionUser().then((user) => {
-      if (user) {
-        setAuth({ id: user.id, nom_complet: user.nom_complet });
+    const init = async () => {
+      // 1. Si lien magique → consommer
+      if (isMagicLink) {
+        setScreen('magic');
+        return;
       }
+
+      // 2. Vérifier session existante
+      const sessionUser = await getSessionUser();
+      if (sessionUser) {
+        setAuth({ id: sessionUser.id, nom_complet: sessionUser.nom_complet });
+        setScreen('dashboard');
+        setLoading(false);
+        return;
+      }
+
+      // 3. Vérifier si appareil enregistré
+      const device = await checkDevice();
+      if (device.trusted) {
+        setScreen('pin');
+        setLoading(false);
+        return;
+      }
+
+      // 4. Rien → landing
+      setScreen('landing');
       setLoading(false);
-    });
+    };
+
+    init();
   }, [isMagicLink, setAuth]);
 
-  if (isMagicLink) {
-    return <MagicConsumePage />;
-  }
+  const handlePinSuccess = (user: { id: number; nom_complet: string }) => {
+    setAuth(user);
+    setScreen('dashboard');
+  };
 
-  if (loading) {
+  const handleMagicSuccess = () => {
+    // Après consommation du lien magique, recharger pour vérifier session
+    window.location.replace(window.location.pathname);
+  };
+
+  if (loading || screen === 'loading') {
     return (
       <div className="min-h-screen bg-[#f8f9ff] flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-navy-400 border-t-transparent rounded-full animate-spin" />
@@ -50,17 +81,24 @@ function AppContent() {
     );
   }
 
-  if (!isAuthenticated) {
-    return <LoginPage onLoginSuccess={() => {
-      getSessionUser().then((user) => {
-        if (user) setAuth({ id: user.id, nom_complet: user.nom_complet });
-        setLoading(false);
-        window.location.reload();
-      });
-    }} />;
+  if (screen === 'magic') {
+    return <MagicConsumePage onSuccess={handleMagicSuccess} />;
   }
 
-  return <Layout onLogout={() => { clearAuth(); window.location.reload(); }} />;
+  if (screen === 'pin') {
+    return <PinEntryScreen onSuccess={handlePinSuccess} onLogout={() => { clearAuth(); setScreen('landing'); }} />;
+  }
+
+  if (screen === 'landing' || !isAuthenticated) {
+    return <LandingPage />;
+  }
+
+  return (
+    <>
+      <PwaInstallBanner />
+      <Layout onLogout={() => { clearAuth(); window.location.reload(); }} />
+    </>
+  );
 }
 
 export default function App() {
