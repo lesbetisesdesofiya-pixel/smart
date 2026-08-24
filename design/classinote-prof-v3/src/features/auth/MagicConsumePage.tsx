@@ -131,17 +131,13 @@ export const MagicConsumePage: React.FC<MagicConsumePageProps> = ({ onSuccess })
     if (pin.length < 4) return;
 
     setPinLoading(true);
-    log(`Enregistrement PIN...`);
+    log(`Enregistrement PIN via setup-pin...`);
     try {
-      const res = await fetch('/api/v1/auth/device/register', {
+      const res = await fetch('/api/v1/auth/device/setup-pin', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({
-          code: userData?.code || '',
-          telephone: userData?.telephone || '',
-          pin,
-        }),
+        body: JSON.stringify({ pin }),
       });
 
       const data = await res.json();

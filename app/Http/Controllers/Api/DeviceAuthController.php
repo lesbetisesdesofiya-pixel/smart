@@ -334,4 +334,61 @@ class DeviceAuthController extends Controller
         }
         return [];
     }
+
+    /**
+     * Enregistrer PIN après authentification par lien magique (session-based)
+     * POST /auth/device/setup-pin
+     * Body: { pin }
+     */
+    public function setupPin(Request $request): JsonResponse
+    {
+        $request->validate([
+            'pin' => 'required|string|min:4|max:6',
+        ]);
+
+        // Get user from session (prof or parent guard)
+        $user = Auth::guard('prof')->user();
+        $type = 'prof';
+
+        if (!$user) {
+            $user = Auth::guard('parent')->user();
+            $type = 'parent';
+        }
+
+        if (!$user) {
+            return response()->json(['message' => 'Non autorisé'], 401);
+        }
+
+        // Set PIN
+        $user->forceFill([
+            'pin_hash' => Hash::make($request->pin),
+            'code_used' => true,
+        ])->save();
+
+        // Create trusted device
+        $deviceToken = TrustedDevice::generateToken();
+        TrustedDevice::create([
+            'device_token' => $deviceToken,
+            'user_type' => $type,
+            'user_id' => $user->id,
+            'device_name' => $request->header('User-Agent'),
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->header('User-Agent'),
+            'last_used_at' => now(),
+            'expires_at' => now()->addDays(180),
+        ]);
+
+        // Create Sanctum token
+        $sanctumToken = $user->createToken('device-auth')->plainTextToken;
+
+        $secure = env('SESSION_SECURE_COOKIE', true);
+
+        return response()->json([
+            'success' => true,
+            'type' => $type,
+            'user' => $this->getUserData($user, $type),
+        ])
+        ->withCookie(cookie('classinote_token', $sanctumToken, 60 * 24 * 180, '/', null, $secure, true, false, 'lax'))
+        ->withCookie(cookie('classinote_device', $deviceToken, 60 * 24 * 180, '/', null, $secure, true, false, 'lax'));
+    }
 }
