@@ -46,7 +46,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onLogout }) => {
 
       {/* Absences */}
       {resume.absences_mois > 0 && (
-        <Card delay={0.4} onClick={() => onNavigate('examens')} style={{ padding: '20px' }}>
+        <Card delay={0.4} onClick={() => onNavigate('absences')} style={{ padding: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
             <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#fff7ed', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><AlertTriangle size={18} color="#f97316" /></div>
             <div>

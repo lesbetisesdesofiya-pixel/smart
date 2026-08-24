@@ -10,6 +10,7 @@ import { MessagesPage } from '@/features/messages/MessagesPage';
 import { SchedulePage } from '@/features/schedule/SchedulePage';
 import { SupportPage } from '@/features/support/SupportPage';
 import { FeedPage } from '@/features/feed/FeedPage';
+import { AbsencesPage } from '@/features/absences/AbsencesPage';
 
 interface LayoutProps {
   onLogout: () => void;
@@ -38,6 +39,7 @@ export const Layout: React.FC<LayoutProps> = ({ onLogout }) => {
         {tab === 'schedule' && <SchedulePage />}
         {tab === 'support' && <SupportPage />}
         {tab === 'nouveautes' && <FeedPage />}
+        {tab === 'absences' && <AbsencesPage />}
       </main>
 
       <BottomNav tab={tab} onNavigate={handleNavigate} />
