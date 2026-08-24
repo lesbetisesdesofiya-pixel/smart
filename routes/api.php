@@ -59,6 +59,8 @@ Route::prefix('v1')->group(function () {
 
     // Parent V3 dashboard (works with session auth from magic links)
     Route::get('parent/dashboard', [\App\Http\Controllers\Api\Parent\ParentDashboardController::class, 'dashboard']);
+    Route::get('parent/absences', [\App\Http\Controllers\Api\Parent\ParentDashboardController::class, 'absences']);
+    Route::get('parent/nouveautes', [\App\Http\Controllers\Api\Parent\ParentDashboardController::class, 'nouveautes']);
 
     // Device-based auth for prof/parent
     Route::post('auth/device/verify', [DeviceAuthController::class, 'verify'])

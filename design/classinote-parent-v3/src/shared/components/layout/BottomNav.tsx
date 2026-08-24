@@ -15,19 +15,22 @@ const tabs = [
 ];
 
 export const BottomNav: React.FC<BottomNavProps> = ({ tab, onNavigate }) => (
-  <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-gray-100 safe-area-pb">
-    <div className="flex justify-around items-center px-2 py-2 max-w-lg mx-auto">
+  <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-2xl border-t border-gray-100/50 safe-area-pb">
+    <div className="flex justify-around items-center px-1 py-1.5 max-w-lg mx-auto">
       {tabs.map((t) => {
         const active = tab === t.id;
         return (
           <button
             key={t.id}
             onClick={() => onNavigate(t.id)}
-            className={`flex flex-col items-center px-3 py-1.5 rounded-xl transition-all cursor-pointer
-              ${active ? 'text-navy-800 bg-navy-50' : 'text-gray-400'}`}
+            className={`flex flex-col items-center px-3 py-1.5 rounded-2xl transition-all cursor-pointer relative
+              ${active ? 'text-navy-800' : 'text-gray-400'}`}
           >
-            <t.icon className={`w-5 h-5 ${active ? 'text-navy-800' : 'text-gray-400'}`} strokeWidth={active ? 2.5 : 2} />
-            <span className={`text-[10px] mt-0.5 ${active ? 'font-bold' : 'font-medium'}`}>{t.label}</span>
+            {active && (
+              <div className="absolute inset-0 bg-navy-50 rounded-2xl" />
+            )}
+            <t.icon className={`w-5 h-5 relative z-10 ${active ? 'text-navy-800' : 'text-gray-400'}`} strokeWidth={active ? 2.5 : 2} />
+            <span className={`text-[10px] mt-0.5 relative z-10 ${active ? 'font-bold' : 'font-medium'}`}>{t.label}</span>
           </button>
         );
       })}

@@ -1,9 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchDashboard } from '@/shared/api/client';
-import { SkeletonCard } from '@/shared/components/ui/Skeleton';
+import { SkeletonList } from '@/shared/components/ui/Skeleton';
 import { ErrorState } from '@/shared/components/ui/Feedback';
-import { HeroCard } from './components/HeroCard';
-import { ChildSelector } from './components/ChildSelector';
+import { HeroCard, ChildSelector } from './components/HeroCard';
 import { LatestGradeCard } from './components/LatestGradeCard';
 import { SummaryRow } from './components/SummaryRow';
 import { ActionCards } from './components/ActionCards';
@@ -24,19 +23,8 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onLogout }) => {
     queryFn: fetchDashboard,
   });
 
-  if (isLoading) {
-    return (
-      <div className="px-5 pb-28 max-w-lg mx-auto space-y-4 pt-4">
-        <div className="h-40 rounded-2xl animate-shimmer" />
-        <SkeletonCard />
-        <SkeletonCard />
-      </div>
-    );
-  }
-
-  if (error || !data) {
-    return <ErrorState title="Impossible de charger les données" onRetry={() => refetch()} />;
-  }
+  if (isLoading) return <div className="px-5 pb-28 max-w-lg mx-auto space-y-4 pt-4"><SkeletonList /></div>;
+  if (error || !data) return <ErrorState title="Impossible de charger les données" onRetry={() => refetch()} />;
 
   const enfants = data.enfants || [];
   const currentId = activeChildId || enfants[0]?.id;

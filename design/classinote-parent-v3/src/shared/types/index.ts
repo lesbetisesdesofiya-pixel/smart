@@ -46,9 +46,35 @@ export interface Grade {
     titre: string;
     note_sur: number;
     coefficient: number;
+    date?: string;
     matiere: { libelle: string };
     periode?: string;
   };
   note: number;
   appreciation?: string;
+}
+
+export interface Exam {
+  id: number;
+  titre: string;
+  date: string;
+  coefficient: number;
+  note_sur: number;
+  matiere: { libelle: string };
+}
+
+export interface Conversation {
+  id: number;
+  subject?: string;
+  prof?: { prenom: string; nom: string };
+  last_message?: { contenu: string };
+  last_message_at?: string;
+  unread_count?: number;
+}
+
+export interface Message {
+  id: number;
+  sender_type: string;
+  contenu: string;
+  created_at: string;
 }

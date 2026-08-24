@@ -24,7 +24,7 @@ export const Sparkline: React.FC<SparklineProps> = ({
             type="monotone"
             dataKey="y"
             stroke={color}
-            strokeWidth={2}
+            strokeWidth={2.5}
             dot={false}
           />
         </LineChart>

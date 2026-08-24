@@ -184,4 +184,104 @@ class ParentDashboardController extends Controller
         if (!$schoolId) return null;
         return AnneeScolaire::where('school_id', $schoolId)->where('active', true)->first();
     }
+
+    public function absences(Request $request): JsonResponse
+    {
+        $parent = $this->getParent($request);
+        if (!$parent) return response()->json(['message' => 'Non autorisé'], 401);
+
+        $eleveIds = $parent->eleves()->where('access_locked', false)->pluck('eleves.id');
+
+        $absences = \App\Models\Presence::whereIn('eleve_id', $eleveIds)
+            ->where('est_present', false)
+            ->with('eleve')
+            ->orderByDesc('date')
+            ->take(50)
+            ->get()
+            ->map(fn($p) => [
+                'id' => $p->id,
+                'date' => $p->date,
+                'eleve' => $p->eleve ? $p->eleve->nom_complet : null,
+                'matiere' => $p->matiere ?? null,
+                'justifie' => $p->justifie ?? false,
+            ]);
+
+        return response()->json($absences);
+    }
+
+    public function nouveautes(Request $request): JsonResponse
+    {
+        $parent = $this->getParent($request);
+        if (!$parent) return response()->json(['message' => 'Non autorisé'], 401);
+
+        $eleveIds = $parent->eleves()->where('access_locked', false)->pluck('eleves.id');
+        $anneeActive = $this->resolveAnneeScolaire($parent);
+        $feed = [];
+
+        // Notes récentes
+        $notes = \App\Models\Note::whereIn('eleve_id', $eleveIds)
+            ->with('evaluation.matiere', 'eleve')
+            ->latest()
+            ->take(10)
+            ->get();
+        foreach ($notes as $n) {
+            $feed[] = [
+                'id' => 'note-' . $n->id,
+                'type' => 'note',
+                'titre' => $n->evaluation?->titre ?? 'Note',
+                'contenu' => $n->eleve?->nom_complet . ' : ' . $n->note . '/' . ($n->evaluation?->note_sur ?? 20) . ' en ' . ($n->evaluation?->matiere?->libelle ?? ''),
+                'date' => $n->created_at,
+            ];
+        }
+
+        // Remarques récentes
+        $remarques = \App\Models\Remarque::whereIn('eleve_id', $eleveIds)
+            ->with('prof', 'eleve')
+            ->latest()
+            ->take(10)
+            ->get();
+        foreach ($remarques as $r) {
+            $feed[] = [
+                'id' => 'avis-' . $r->id,
+                'type' => 'avis',
+                'titre' => $r->prof ? $r->prof->nom_complet : 'Professeur',
+                'contenu' => $r->contenu,
+                'date' => $r->created_at,
+            ];
+        }
+
+        // Absences récentes
+        $absences = \App\Models\Presence::whereIn('eleve_id', $eleveIds)
+            ->where('est_present', false)
+            ->with('eleve')
+            ->orderByDesc('date')
+            ->take(10)
+            ->get();
+        foreach ($absences as $a) {
+            $feed[] = [
+                'id' => 'absence-' . $a->id,
+                'type' => 'absence',
+                'titre' => 'Absence',
+                'contenu' => $a->eleve?->nom_complet . ' absent(e) le ' . ($a->date ? date('d/m/Y', strtotime($a->date)) : ''),
+                'date' => $a->date,
+            ];
+        }
+
+        // Trier par date décroissante
+        usort($feed, fn($a, $b) => strtotime($b['date'] ?? 0) - strtotime($a['date'] ?? 0));
+
+        return response()->json(array_slice($feed, 0, 30));
+    }
+
+    private function getParent(Request $request): ?ParentModel
+    {
+        $parent = Auth::guard('parent')->user();
+        if (!$parent) {
+            $accessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($request->bearerToken());
+            if ($accessToken && $accessToken->tokenable instanceof ParentModel) {
+                $parent = $accessToken->tokenable;
+            }
+        }
+        return $parent;
+    }
 }
