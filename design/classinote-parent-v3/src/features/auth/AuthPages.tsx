@@ -36,8 +36,7 @@ export const MagicConsumePage: React.FC<MagicConsumePageProps> = ({ onSuccess })
     let cancelled = false;
     log(`Token trouvé: ${magic.token.substring(0, 16)}...`);
 
-    // Étape 1: Vérifier session
-    log('Étape 1: Vérification session /auth/me...');
+    log('Vérification session /auth/me...');
     fetch('/api/v1/auth/me', {
       method: 'GET',
       credentials: 'include',
@@ -53,8 +52,7 @@ export const MagicConsumePage: React.FC<MagicConsumePageProps> = ({ onSuccess })
         return;
       }
 
-      // Étape 2: Consommer le lien
-      log('Étape 2: Consommation du lien magique...');
+      log('Consommation du lien magique...');
       fetch('/api/v1/magic/consume', {
         method: 'POST',
         credentials: 'include',
@@ -67,22 +65,20 @@ export const MagicConsumePage: React.FC<MagicConsumePageProps> = ({ onSuccess })
         if (cancelled) return;
         log(`Données /magic/consume: ${JSON.stringify(json)}`);
         if (!json.success) {
-          log(`ERREUR: ${json.message}`);
           setError(json.message || 'Lien invalide ou expiré.');
           return;
         }
         log('Succès! Redirection dans 1s...');
         setDone(true);
         setTimeout(() => {
-          log('Redirection maintenant...');
           window.location.href = window.location.pathname;
         }, 1000);
       }).catch(err => {
-        log(`ERREUR fetch /magic/consume: ${err.message}`);
+        log(`ERREUR /magic/consume: ${err.message}`);
         if (!cancelled) setError('Erreur. Réessayez.');
       });
     }).catch(err => {
-      log(`ERREUR fetch /auth/me: ${err.message}`);
+      log(`ERREUR /auth/me: ${err.message}`);
       if (!cancelled) setError('Erreur. Réessayez.');
     });
 
@@ -91,13 +87,10 @@ export const MagicConsumePage: React.FC<MagicConsumePageProps> = ({ onSuccess })
 
   if (!magic) {
     return (
-      <div className="min-h-screen bg-[#f8f9ff] flex items-center justify-center p-6">
-        <div className="text-center space-y-3">
-          <AlertCircle className="w-12 h-12 text-rose-400 mx-auto" />
-          <p className="text-sm text-gray-600">Lien invalide.</p>
-          <pre className="text-xs text-left bg-gray-100 p-3 rounded-lg mt-4 max-w-sm overflow-auto">
-            {debug.join('\n')}
-          </pre>
+      <div style={{ minHeight: '100dvh', background: '#f5f6fa', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+        <div style={{ textAlign: 'center' }}>
+          <AlertCircle size={48} color="#f87171" style={{ margin: '0 auto' }} />
+          <p style={{ fontSize: '14px', color: '#374151', marginTop: '12px' }}>Lien invalide.</p>
         </div>
       </div>
     );
@@ -105,14 +98,12 @@ export const MagicConsumePage: React.FC<MagicConsumePageProps> = ({ onSuccess })
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#f8f9ff] flex items-center justify-center p-6">
-        <div className="text-center space-y-3">
-          <Link2 className="w-12 h-12 text-rose-400 mx-auto" />
-          <p className="text-sm text-gray-600">{error}</p>
-          <p className="text-xs text-gray-400">Demandez un nouveau lien via WhatsApp.</p>
-          <pre className="text-xs text-left bg-gray-100 p-3 rounded-lg mt-4 max-w-sm overflow-auto">
-            {debug.join('\n')}
-          </pre>
+      <div style={{ minHeight: '100dvh', background: '#f5f6fa', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+        <div style={{ textAlign: 'center' }}>
+          <Link2 size={48} color="#f87171" style={{ margin: '0 auto' }} />
+          <p style={{ fontSize: '14px', color: '#374151', marginTop: '12px' }}>{error}</p>
+          <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>Demandez un nouveau lien.</p>
+          <pre style={{ fontSize: '10px', textAlign: 'left', background: '#f3f4f6', padding: '12px', borderRadius: '12px', marginTop: '16px', maxWidth: '320px', overflow: 'auto', whiteSpace: 'pre-wrap' }}>{debug.join('\n')}</pre>
         </div>
       </div>
     );
@@ -120,59 +111,53 @@ export const MagicConsumePage: React.FC<MagicConsumePageProps> = ({ onSuccess })
 
   if (done) {
     return (
-      <div className="min-h-screen bg-[#f8f9ff] flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto" />
-          <p className="text-sm font-bold text-gray-900">Connexion réussie !</p>
-          <p className="text-xs text-gray-400">Redirection...</p>
-          <pre className="text-xs text-left bg-gray-100 p-3 rounded-lg mt-4 max-w-sm overflow-auto">
-            {debug.join('\n')}
-          </pre>
+      <div style={{ minHeight: '100dvh', background: '#f5f6fa', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+        <div style={{ textAlign: 'center' }}>
+          <CheckCircle size={48} color="#10b981" style={{ margin: '0 auto' }} />
+          <p style={{ fontSize: '16px', fontWeight: 700, color: '#111827', marginTop: '12px' }}>Connexion réussie !</p>
+          <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>Redirection...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f9ff] flex items-center justify-center p-6">
-      <div className="text-center space-y-3">
-        <div className="w-8 h-8 border-2 border-navy-400 border-t-transparent rounded-full animate-spin mx-auto" />
-        <p className="text-sm text-gray-400">Connexion...</p>
-        <pre className="text-xs text-left bg-gray-100 p-3 rounded-lg mt-4 max-w-sm overflow-auto">
-          {debug.join('\n')}
-        </pre>
+    <div style={{ minHeight: '100dvh', background: '#f5f6fa', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ width: '32px', height: '32px', border: '3px solid #dbe3f4', borderTopColor: '#002366', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto' }} />
+        <p style={{ fontSize: '14px', color: '#9ca3af', marginTop: '12px' }}>Connexion...</p>
+        <pre style={{ fontSize: '10px', textAlign: 'left', background: '#f3f4f6', padding: '12px', borderRadius: '12px', marginTop: '16px', maxWidth: '320px', overflow: 'auto', whiteSpace: 'pre-wrap' }}>{debug.join('\n')}</pre>
       </div>
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 };
 
 export const LandingPage: React.FC = () => (
-  <div className="min-h-screen bg-gradient-to-br from-[#002366] to-[#0a1e3d] flex flex-col items-center justify-center p-6">
+  <div style={{ minHeight: '100dvh', background: 'linear-gradient(135deg, #002366, #0a1e3d)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className="w-full max-w-sm space-y-8 text-center"
+      style={{ width: '100%', maxWidth: '384px', display: 'flex', flexDirection: 'column', gap: '32px', textAlign: 'center' }}
     >
-      <div className="space-y-3">
-        <div className="w-16 h-16 bg-white/15 rounded-2xl flex items-center justify-center mx-auto backdrop-blur-sm border border-white/10">
-          <span className="text-2xl font-bold text-white">CN</span>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ width: '64px', height: '64px', borderRadius: '16px', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <span style={{ fontSize: '24px', fontWeight: 800, color: '#ffffff' }}>CN</span>
         </div>
-        <h1 className="text-2xl font-extrabold text-white">ClassiNote</h1>
-        <p className="text-sm text-blue-200">Espace Parent</p>
+        <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#ffffff' }}>ClassiNote</h1>
+        <p style={{ fontSize: '14px', color: '#93c5fd' }}>Espace Parent</p>
       </div>
-      <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10 space-y-4">
-        <Link2 className="w-8 h-8 text-amber-300 mx-auto" />
+      <div style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)', borderRadius: '24px', padding: '24px', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+        <Link2 size={32} color="#fbbf24" />
         <div>
-          <h2 className="text-sm font-bold text-white">Lien d'accès requis</h2>
-          <p className="text-xs text-blue-200/80 mt-2 leading-relaxed">
+          <h2 style={{ fontSize: '14px', fontWeight: 700, color: '#ffffff' }}>Lien d'accès requis</h2>
+          <p style={{ fontSize: '12px', color: 'rgba(191,219,254,0.8)', marginTop: '8px', lineHeight: 1.6 }}>
             Demandez un lien d'accès à l'administration de l'école via WhatsApp.
-            <br /><br />
-            Le lien sera utilisé une seule fois pour enregistrer votre appareil.
           </p>
         </div>
       </div>
-      <p className="text-xs text-blue-200/40">ClassiNote {new Date().getFullYear()}</p>
+      <p style={{ fontSize: '12px', color: 'rgba(191,219,254,0.4)' }}>ClassiNote {new Date().getFullYear()}</p>
     </motion.div>
   </div>
 );
